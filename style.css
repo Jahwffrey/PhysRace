@@ -1,0 +1,18 @@
+body
+{
+	background-color:rgb(220,220,220);
+}
+#canv
+{
+	border:1px solid black;
+}
+#canvDiv
+{
+	margin-left:auto;
+	margin-right:auto;
+	padding-bottom:2px;
+	padding-top:8px;
+	max-width:818px;
+	text-align:center;
+	background-color:white;	
+}
