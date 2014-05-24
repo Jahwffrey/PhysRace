@@ -5,19 +5,24 @@ var partList = [];
 var bindList = [];
 var wallList = [];
 var keys = [];
-var numTimes = 10;
 var num = 0;
 var bindNum = 0;
-var jelloConst = .00008;
-var grav =.0098;
-var speed = .2;
 var TAU = 2*3.141592638;
-var devmode = false;
 
-//Shape:
+//Pararmeters:
+var numTimes = 10; //Higher means more accurate physics but slower speed;
+var jelloConst = .00008; //Stiffness, from 0 to .5
+var fricConst = 1; //how much friction the ground has, 0 to 1
+var grav =.0098; //acceleration due to gravity
+var speed = .2; // how fast the blob accelerates
+var devmode = false; //show behind the scenes things or not
+
+//Shape perameters:
 var numPoints = 30;
 var perimeter = 200;
-var numSides = 30;
+var numSides = 4;
+
+
 var xStart = 400;
 var xFirst = xStart;
 var yStart = 100;
@@ -109,7 +114,7 @@ $(document).ready(function(){
 		for(var i = 0;i < partList.length;i++){
 			partList[i].vel = partList[i].pos.subtract(partList[i].prevPos);
 			if(partList[i].friction){
-				partList[i].vel = partList[i].vel.add(new vector2(-(partList[i].vel.x),0));
+				partList[i].vel = partList[i].vel.add(new vector2(-(partList[i].vel.x)*fricConst,0)); //friction
 			}
 			partList[i].friction = false;
 			if(partList[i].vel.y<-10) partList[i].vel.y = partList[i].vel.y/1.5;
@@ -138,6 +143,7 @@ $(document).ready(function(){
 						var k = wallList[i].b;
 						partList[ii].pos.x = (x0 + (m*y0)-(m*k))/((m*m)+1);
 						partList[ii].pos.y = m*((x0 + (m*y0) - (m*k))/((m*m)+1)) + k;
+						partList[ii].friction = true;
 						if(partList[ii].pos.y>relY){
 							partList[ii].pos.y = relY;
 						}	
