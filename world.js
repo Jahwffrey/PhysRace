@@ -11,7 +11,7 @@ var TAU = 2*3.141592638;
 
 //Pararmeters:
 var numTimes = 10; //Higher means more accurate physics but slower speed;
-var jelloConst = .00008; //Stiffness, from 0 to .5
+var jelloConst = .0002; //Stiffness, from 0 to .5
 var fricConst = 0; //how much friction the ground has, 0 to 1
 var grav =.0098; //acceleration due to gravity
 var speed = .2; // how fast the blob accelerates
@@ -20,7 +20,7 @@ var devmode = false; //show behind the scenes things or not
 //Shape perameters:
 var numPoints = 30;
 var perimeter = 200;
-var numSides = 40;
+var numSides = 5;
 
 
 var xStart = 400;
