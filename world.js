@@ -12,7 +12,7 @@ var TAU = 2*3.141592638;
 //Pararmeters:
 var numTimes = 10; //Higher means more accurate physics but slower speed;
 var jelloConst = .00008; //Stiffness, from 0 to .5
-var fricConst = 1; //how much friction the ground has, 0 to 1
+var fricConst = 0; //how much friction the ground has, 0 to 1
 var grav =.0098; //acceleration due to gravity
 var speed = .2; // how fast the blob accelerates
 var devmode = false; //show behind the scenes things or not
@@ -20,7 +20,7 @@ var devmode = false; //show behind the scenes things or not
 //Shape perameters:
 var numPoints = 30;
 var perimeter = 200;
-var numSides = 4;
+var numSides = 40;
 
 
 var xStart = 400;
@@ -69,7 +69,7 @@ var xNext = 0;
 var yNext = 0;
 for(var i = 0;i < 200;i++){
 	xNext = xBegin+10+Math.random()*200;
-	yNext = yBegin-20+Math.random()*40;
+	yNext = yBegin-80+Math.random()*160;
 	makeWall(xBegin,yBegin,xNext,yNext);
 	xBegin = xNext;
 	yBegin = yNext;
@@ -141,6 +141,7 @@ $(document).ready(function(){
 						var y0 = partList[ii].pos.y;
 						var m = wallList[i].slope;
 						var k = wallList[i].b;
+						partList[ii].prevPos = partList[ii].pos;
 						partList[ii].pos.x = (x0 + (m*y0)-(m*k))/((m*m)+1);
 						partList[ii].pos.y = m*((x0 + (m*y0) - (m*k))/((m*m)+1)) + k;
 						partList[ii].friction = true;
