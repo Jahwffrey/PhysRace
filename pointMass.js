@@ -7,7 +7,7 @@ function pointMass(x,y,mass,sXVel,sYVel,id){
 	this.currTime = globalTime;
 	this.mass = mass;
 	this.id = id;
-	this.canjump = true;
+	this.friction = false;
 }
 
 pointMass.prototype.step = function(currentTime){

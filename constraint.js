@@ -9,9 +9,6 @@ constraint.prototype.calc = function(){
 	var diff = this.mass1.pos.subtract(this.mass2.pos);
 	var distance = Math.sqrt((diff.x*diff.x)+(diff.y*diff.y));
 	var temp = this.stiffness;
-	//if(distance < (this.dist/4)){
-		//this.stiffness = .3;
-	//}
 	var mainDiff = (this.dist-distance)/distance;
 	var changeVect = new vector2(diff.x*this.stiffness*mainDiff,diff.y*this.stiffness*mainDiff);
 	

@@ -108,6 +108,10 @@ $(document).ready(function(){
 		//box bounds, simulate, and reset
 		for(var i = 0;i < partList.length;i++){
 			partList[i].vel = partList[i].pos.subtract(partList[i].prevPos);
+			if(partList[i].friction){
+				partList[i].vel = partList[i].vel.add(new vector2(-(partList[i].vel.x),0));
+			}
+			partList[i].friction = false;
 			if(partList[i].vel.y<-10) partList[i].vel.y = partList[i].vel.y/1.5;
 			partList[i].acc = partList[i].acc.add(new vector2(0,grav));
 			partList[i].step(globalTime);
@@ -128,8 +132,15 @@ $(document).ready(function(){
 					var relY = (wallList[i].slope * partList[ii].pos.x)+wallList[i].b;
 					var relX = (partList[ii].pos.y - wallList[i].b)/wallList[i].m;
 					if(partList[ii].pos.y>relY){
-						partList[ii].pos.y = relY;
-						partList[ii].pos.x = (partList[ii].pos.x+partList[ii].prevPos.x)/2;
+						var x0 = partList[ii].pos.x;
+						var y0 = partList[ii].pos.y;
+						var m = wallList[i].slope;
+						var k = wallList[i].b;
+						partList[ii].pos.x = (x0 + (m*y0)-(m*k))/((m*m)+1);
+						partList[ii].pos.y = m*((x0 + (m*y0) - (m*k))/((m*m)+1)) + k;
+						if(partList[ii].pos.y>relY){
+							partList[ii].pos.y = relY;
+						}	
 					}
 				}
 			}
