@@ -8,83 +8,63 @@ var keys = [];
 var numTimes = 10;
 var num = 0;
 var bindNum = 0;
+var jelloConst = .00008;
 var grav =.0098;
-var speed = .01;
+var speed = .2;
+var TAU = 2*3.141592638;
+var devmode = false;
 
-var mode = 0;
+//Shape:
+var numPoints = 30;
+var perimeter = 200;
+var numSides = 30;
+var xStart = 400;
+var xFirst = xStart;
+var yStart = 100;
+var yFirst = yStart;
+var sideLen = perimeter/numSides;
+var numPerSide = Math.round(numPoints/numSides);
+numPoints = numPerSide*numSides;
 
-var numPoints = 28;
-
-
-if(mode === 0){
-//square:
-	var sideLength = 50;
-	var xStar = 400;
-	var yStar = 100;
-	var numPerSide = Math.round(numPoints/4);
-	for(var i = 0;i < numPerSide;i++){
-		var relativeX = xStar+(i*(sideLength/numPerSide));
-		var relativeY = yStar;
-		makePart(relativeX,relativeY,1,0,0);
-	}
-	for(var i = 0;i < numPerSide;i++){
-		var relativeX = xStar+sideLength;
-		var relativeY = yStar+(i*(sideLength/numPerSide));
-		makePart(relativeX,relativeY,1,0,0);
-	}
-	for(var i = numPerSide;i >= 0;i--){
-		var relativeX = xStar+(i*(sideLength/numPerSide))
-		var relativeY = yStar+sideLength;
-		makePart(relativeX,relativeY,1,0,0);
-	}
-	for(var i = numPerSide-1;i >= 0;i--){
-		var relativeX = xStar;
-		var relativeY = yStar+(i*(sideLength/numPerSide))
-		makePart(relativeX,relativeY,1,0,0);
-	}
-
-	for(var i = 0;i < numPoints;i++){
-		for(var ii = 1;ii < numPoints; ii++){
-			var next = i + ii;
-			if(next>=partList.length){
-				next = next - numPoints;
-			}
-			makeBind(i,next,-1,.0003);
-		}
-	}
-}
-else if(mode === 1){
-//circle:
-	var radius = 30;
-	var xMain = 400;
-	var yMain = 150;
-	for(var i = 0;i < numPoints;i++){
-		var angle = i*((2*3.141592638)/numPoints);
-		var relativeX = xMain+(radius*Math.cos(angle));
-		var relativeY = yMain+(radius*Math.sin(angle));
-		makePart(relativeX,relativeY,1,0,0);
-	}
-	for(var i = 0;i < numPoints;i++){
-		//neighbor:
-		for(var ii = numPoints/2;ii < numPoints; ii++){
-			var next = i + ii;
-			if(next>=partList.length){
-				next = next - numPoints;
-			}
-			makeBind(i,next,-1,.0003);
-		}
+var theta = 0;
+for(var i = 0;i < numSides;i++){
+	theta = i*((TAU)/numSides);
+	for(var ii = 0;ii<numPerSide;ii++){
+		makePart(xStart,yStart,1,0,0);
+		xStart = xStart+(sideLen/numPerSide)*Math.cos(theta);
+		yStart = yStart+(sideLen/numPerSide)*Math.sin(theta);
 	}
 }
 
-//makeBind(0,numPoints,-1,.0003);
+for(var i = 0;i < partList.length;i++){
+	var next = i + 1;
+	if(next>=partList.length) next = 0;
+	makeBind(i,next,-1,.5);
+}
+
+for(var ii  = Math.round(numPoints/4); ii < 2*numPoints/4;ii++){
+	for(var i = 0;i < partList.length;i++){
+		var next = i + ii;
+		if(next>=partList.length) next = next - numPoints;
+		makeBind(i,next,-1,jelloConst);
+	}
+}
+
+var midX = xFirst+sideLen/2;
+var midY = (partList[0].pos.y+partList[Math.round((partList.length-1)/2)].pos.y)/2;
+
+makePart(midX,midY,1,0,0);
+for(var i = 0;i < partList.length-1;i++){
+	makeBind(i,partList.length-1,-1,jelloConst);
+}
 
 var xBegin = 0;
 var yBegin = 250;
 var xNext = 0;
 var yNext = 0;
 for(var i = 0;i < 200;i++){
-	xNext = xBegin+10+Math.random()*10;
-	yNext = yBegin+40-Math.random()*80;
+	xNext = xBegin+10+Math.random()*200;
+	yNext = yBegin-20+Math.random()*40;
 	makeWall(xBegin,yBegin,xNext,yNext);
 	xBegin = xNext;
 	yBegin = yNext;
@@ -116,25 +96,20 @@ $(document).ready(function(){
 		globalTime+=1;
 		view.x = (partList[0].pos.x+partList[Math.round(numPoints/2)].pos.x)/2 - 400;
 		view.y = (partList[0].pos.y+partList[Math.round(numPoints/2)].pos.y)/2 - 150;
+		if(68 in keys){
+			partList[partList.length-1].acc = partList[partList.length-1].acc.add(new vector2(speed,0));
+		}
+		if(65 in keys){
+			partList[partList.length-1].acc = partList[partList.length-1].acc.add(new vector2(-speed,0));
+		}
+		if(83 in keys){
+			partList[partList.length-1].acc = partList[partList.length-1].acc.add(new vector2(0,speed*10));
+		}
 		//box bounds, simulate, and reset
 		for(var i = 0;i < partList.length;i++){
 			partList[i].vel = partList[i].pos.subtract(partList[i].prevPos);
 			if(partList[i].vel.y<-10) partList[i].vel.y = partList[i].vel.y/1.5;
 			partList[i].acc = partList[i].acc.add(new vector2(0,grav));
-			
-			
-			//wasd:
-			if(68 in keys){
-				partList[i].acc = partList[i].acc.add(new vector2(speed,0));
-			}
-			if(65 in keys){
-				partList[i].acc = partList[i].acc.add(new vector2(-speed,0));
-			}
-			if(83 in keys){
-				partList[i].acc = partList[i].acc.add(new vector2(0,speed));
-			}
-			
-			
 			partList[i].step(globalTime);
 			partList[i].acc.set(0,0);
 		}
@@ -147,16 +122,14 @@ $(document).ready(function(){
 		}
 		//walls
 		for(var i = 0;i < wallList.length;i++){
+			var iSlope = (-1)/(wallList[i].slope);
 			for(var ii = 0;ii < partList.length;ii++){
 				if(partList[ii].pos.x > wallList[i].x1 && partList[ii].pos.x < wallList[i].x2){
 					var relY = (wallList[i].slope * partList[ii].pos.x)+wallList[i].b;
+					var relX = (partList[ii].pos.y - wallList[i].b)/wallList[i].m;
 					if(partList[ii].pos.y>relY){
-						var temp = partList[ii].pos;
-						partList[ii].pos = partList[ii].prevPos;
-						partList[ii].prevPos = temp;
-						if(partList[ii].pos.y>relY){
-							partList[ii].pos.y = relY;
-						}
+						partList[ii].pos.y = relY;
+						partList[ii].pos.x = (partList[ii].pos.x+partList[ii].prevPos.x)/2;
 					}
 				}
 			}
@@ -164,29 +137,58 @@ $(document).ready(function(){
 	}
 	
 	function redraw(){
-		canX.fillStyle = "rgb(255,255,255)";
+		canX.fillStyle = "rgb(100,100,255)";
 		canX.clearRect(0,0,800,300);
 		canX.fillRect(0,0,800,300);
-		canX.fillStyle = "rgb(0,0,0)";
-		for(var i = 0 ;i < partList.length;i++){
-			//canX.fillRect(partList[i].pos.x-.8-view.x,partList[i].pos.y-.8-view.y,1.6,1.6);
-		}
-		for(var i = 0;i <= numPoints;i++){
-			var next = i + 1;
-			if(next>=partList.length){
-				next = next - numPoints;
-			}
-			canX.beginPath();
-			canX.moveTo(partList[i].pos.x-view.x,partList[i].pos.y-view.y);
-			canX.lineTo(partList[next].pos.x-view.x,partList[next].pos.y-view.y);
-			canX.stroke()
-		}
+		
+		//the ground
+		canX.beginPath();
+		canX.strokeStyle = "rgb(20,200,20)";
+		canX.fillStyle = "rgb(102,51,0)";
+		canX.moveTo(wallList[0].x1-view.x,wallList[0].y1-view.y);
 		for(var i = 0;i < wallList.length;i++){
-			canX.beginPath();
-			canX.moveTo(wallList[i].x1-view.x,wallList[i].y1-view.y);
 			canX.lineTo(wallList[i].x2-view.x,wallList[i].y2-view.y);
-			canX.stroke();
 		}
+		canX.lineTo(wallList[wallList.length-1].x2-view.x,wallList[wallList.length-1].y2-view.y+1000);
+		canX.lineTo(wallList[0].x1-view.x,wallList[0].y1-view.y+1000);
+		canX.closePath();
+		canX.lineWidth = 10;
+		canX.fill();
+		canX.stroke();
+		
+		//The shape:
+		canX.beginPath();
+		canX.strokeStyle="rgb(0,0,0)";
+		canX.moveTo(partList[0].pos.x-view.x,partList[0].pos.y-view.y);
+		for(var i = 0;i < numPoints-1;i++){
+			var next = i + 1;
+			if(next===partList.length-1){
+				next = 0;
+			}
+			canX.lineTo(partList[next].pos.x-view.x,partList[next].pos.y-view.y);
+		}
+		canX.closePath();
+		canX.lineWidth = 1;
+		canX.stroke();
+		canX.fillStyle="rgb(255,0,0)";
+		canX.fill();
+		
+		if(devmode){
+			canX.fillStyle="rgb(0,0,0)"
+			for(var i = 0;i < partList.length;i++){
+				canX.fillRect(partList[i].pos.x-.5-view.x,partList[i].pos.y-.5-view.y,1,1);
+			};
+			
+			canX.strokeStyle="blue";
+			canX.lineWidth = .3;
+			for(var i = 0;i < bindList.length;i++){
+				canX.beginPath();
+				canX.moveTo(bindList[i].mass1.pos.x-view.x,bindList[i].mass1.pos.y-view.y);
+				canX.lineTo(bindList[i].mass2.pos.x-view.x,bindList[i].mass2.pos.y-view.y);
+				canX.stroke();
+			}	
+		}
+		
 	}
 	
 	function go(){
@@ -207,17 +209,6 @@ $(document).ready(function(){
 		})
 		.mousedown(function(){
 			//mouse.down = true;
-			var tempNum = num;
-			makePart(mouse.x-20,mouse.y-20,1,0,0);
-			makePart(mouse.x+20,mouse.y-20,1,0,0);
-			makePart(mouse.x+20,mouse.y+20,1,0,0);
-			makePart(mouse.x-20,mouse.y+20,1,0,0);
-			makeBind(tempNum,tempNum+1,-1,.5,1);
-			makeBind(tempNum+1,tempNum+2,-1,.5,1);
-			makeBind(tempNum+2,tempNum+3,-1,.5,1);
-			makeBind(tempNum+3,tempNum,-1,.5,1);
-			makeBind(tempNum,tempNum+2,-1,.5,0);
-			makeBind(tempNum+1,tempNum+3,-1,.5,0);
 		})
 		.mouseup(function(){
 			mouse.down = false;
