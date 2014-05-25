@@ -12,15 +12,16 @@ var TAU = 2*3.141592638;
 //Pararmeters:
 var numTimes = 10; //Higher means more accurate physics but slower speed;
 var jelloConst = .0002; //Stiffness, from 0 to .5
-var fricConst = 0; //how much friction the ground has, 0 to 1
+var fricConst = 1; //how much friction the ground has, 0 to 1
 var grav =.0098; //acceleration due to gravity
-var speed = .2; // how fast the blob accelerates
+var speed = .005; // how fast the blob accelerates
 var devmode = false; //show behind the scenes things or not
+var eldrichMonstrosities = false; //really stupid if you set to true
 
 //Shape perameters:
 var numPoints = 30;
 var perimeter = 200;
-var numSides = 5;
+var numSides = 8;
 
 
 var xStart = 400;
@@ -41,11 +42,14 @@ for(var i = 0;i < numSides;i++){
 	}
 }
 
-for(var i = 0;i < partList.length;i++){
-	var next = i + 1;
-	if(next>=partList.length) next = 0;
-	makeBind(i,next,-1,.5);
+if(!eldrichMonstrosities){
+	for(var i = 0;i < partList.length;i++){ //Make the outer shell
+		var next = i + 1;
+		if(next>=partList.length) next = 0;
+		makeBind(i,next,-1,.05); //outer membrane stiffness
+	}
 }
+else{speed = speed*6};
 
 for(var ii  = Math.round(numPoints/4); ii < 2*numPoints/4;ii++){
 	for(var i = 0;i < partList.length;i++){
@@ -101,14 +105,14 @@ $(document).ready(function(){
 		globalTime+=1;
 		view.x = (partList[0].pos.x+partList[Math.round(numPoints/2)].pos.x)/2 - 400;
 		view.y = (partList[0].pos.y+partList[Math.round(numPoints/2)].pos.y)/2 - 150;
-		if(68 in keys){
+		/*if(68 in keys){
 			partList[partList.length-1].acc = partList[partList.length-1].acc.add(new vector2(speed,0));
 		}
 		if(65 in keys){
 			partList[partList.length-1].acc = partList[partList.length-1].acc.add(new vector2(-speed,0));
-		}
+		}*/
 		if(83 in keys){
-			partList[partList.length-1].acc = partList[partList.length-1].acc.add(new vector2(0,speed*10));
+			partList[partList.length-1].acc = partList[partList.length-1].acc.add(new vector2(0,grav*100));
 		}
 		//box bounds, simulate, and reset
 		for(var i = 0;i < partList.length;i++){
@@ -119,6 +123,22 @@ $(document).ready(function(){
 			partList[i].friction = false;
 			if(partList[i].vel.y<-10) partList[i].vel.y = partList[i].vel.y/1.5;
 			partList[i].acc = partList[i].acc.add(new vector2(0,grav));
+			
+			if(i!=partList.length-1){
+				var differ = partList[i].pos.subtract(partList[partList.length-1].pos);
+				if(68 in keys){
+					if(differ.x<0 && differ.y<0) partList[i].acc = partList[i].acc.add(new vector2(speed,-speed));
+					else if(differ.x>0 && differ.y<0) partList[i].acc = partList[i].acc.add(new vector2(speed,speed));
+					else if(differ.x>0 && differ.y>0) partList[i].acc = partList[i].acc.add(new vector2(-speed,speed));
+					else if(differ.x<0 && differ.y>0) partList[i].acc = partList[i].acc.add(new vector2(-speed,-speed));
+				}
+				if(65 in keys){
+					if(differ.x<0 && differ.y<0) partList[i].acc = partList[i].acc.add(new vector2(-speed,speed));
+					else if(differ.x>0 && differ.y<0) partList[i].acc = partList[i].acc.add(new vector2(-speed,-speed));
+					else if(differ.x>0 && differ.y>0) partList[i].acc = partList[i].acc.add(new vector2(speed,-speed));
+					else if(differ.x<0 && differ.y>0) partList[i].acc = partList[i].acc.add(new vector2(speed,speed));
+				}
+			}
 			partList[i].step(globalTime);
 			partList[i].acc.set(0,0);
 		}
@@ -140,10 +160,10 @@ $(document).ready(function(){
 						var x0 = partList[ii].pos.x;
 						var y0 = partList[ii].pos.y;
 						var m = wallList[i].slope;
-						var k = wallList[i].b;
+						var b = wallList[i].b;
 						partList[ii].prevPos = partList[ii].pos;
-						partList[ii].pos.x = (x0 + (m*y0)-(m*k))/((m*m)+1);
-						partList[ii].pos.y = m*((x0 + (m*y0) - (m*k))/((m*m)+1)) + k;
+						partList[ii].pos.x = (x0 + (m*y0)-(m*b))/((m*m)+1);
+						partList[ii].pos.y = m*((x0 + (m*y0) - (m*b))/((m*m)+1)) + b;
 						partList[ii].friction = true;
 						if(partList[ii].pos.y>relY){
 							partList[ii].pos.y = relY;
@@ -198,7 +218,7 @@ $(document).ready(function(){
 			};
 			
 			canX.strokeStyle="blue";
-			canX.lineWidth = .3;
+			canX.lineWidth = .1;
 			for(var i = 0;i < bindList.length;i++){
 				canX.beginPath();
 				canX.moveTo(bindList[i].mass1.pos.x-view.x,bindList[i].mass1.pos.y-view.y);
