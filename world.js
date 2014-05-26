@@ -11,7 +11,7 @@ var TAU = 2*3.141592638;
 
 //Pararmeters:
 var numTimes = 10; //Higher means more accurate physics but slower speed;
-var jelloConst = .0002; //Stiffness, from 0 to .5
+var jelloConst = .00008//.0002; //Stiffness, from 0 to .5
 var fricConst = 1; //how much friction the ground has, 0 to 1
 var grav =.0098; //acceleration due to gravity
 var speed = .005; // how fast the blob accelerates
@@ -21,7 +21,7 @@ var eldrichMonstrosities = false; //really stupid if you set to true
 //Shape perameters:
 var numPoints = 30;
 var perimeter = 200;
-var numSides = 8;
+var numSides = 4;
 
 
 var xStart = 400;
