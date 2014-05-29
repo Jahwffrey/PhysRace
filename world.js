@@ -15,6 +15,7 @@ var timeLeftOver = 0;
 var fixedDelta = 16;
 var perTime = 1000;
 var fixedTimeChange = fixedDelta/perTime;
+var yMax = 0;
 
 //Pararmeters:
 var numTimes = 10; //Higher means more accurate physics but slower speed;
@@ -22,8 +23,13 @@ var jelloConst = .00008//.0002; //Stiffness, from 0 to .5
 var fricConst = 1; //how much friction the ground has, 0 to 1
 var grav = .016*perTime; //acceleration due to gravity
 var speed = .01*perTime; // how fast the blob accelerates
+var waterLevel = 2000; //y level from 0 of the water level
 var devmode = false; //show behind the scenes things or not
 var eldrichMonstrosities = false; //really stupid if you set to true
+var gColor = "rgb(102,51,0)"; //Color of the ground
+var sColor = "rgb(20,200,20)"; //Color of the surface
+var syColor = "rgb(100,100,255)";//Color of the sky
+
 
 //Shape perameters:
 var numPoints = 30;
@@ -83,11 +89,18 @@ var xBegin = 0;
 var yBegin = 250;
 var xNext = 0;
 var yNext = 0;
-var gLength = 200;
+var gLen = 200;
 
-for(var i = 0;i < gLength;i++){
+//Valley:
+for(var i = 0;i < gLen;i++){
 	xNext = xBegin+40+Math.random()*50;
-	yNext = yBegin-10-Math.random()*40;
+	if(i<gLen/2){
+		yNext = yBegin+10+Math.random()*40;
+	}
+	else{
+		yNext = yBegin-10-Math.random()*40;
+	}
+	if(yNext>yMax) yMax = yNext;
 	makeWall(xBegin,yBegin,xNext,yNext);
 	xBegin = xNext;
 	yBegin = yNext;
@@ -95,7 +108,7 @@ for(var i = 0;i < gLength;i++){
 
 //rocky:
 /*
-for(var i = 0;i < gLength;i++){
+for(var i = 0;i < gLen;i++){
 	xNext = xBegin+10+Math.random()*200;
 	yNext = yBegin-60+Math.random()*120;
 	makeWall(xBegin,yBegin,xNext,yNext);
@@ -135,7 +148,8 @@ $(document).ready(function(){
 		}
 			//box bounds, simulate, and reset
 		for(var i = 0;i < partList.length;i++){
-			partList[i].acc = partList[i].acc.add(new vector2(0,grav));
+			//add gravity:
+			(partList[i].pos.y<waterLevel) ? partList[i].acc = partList[i].acc.add(new vector2(0,grav)):partList[i].acc = partList[i].acc.add(new vector2(0,-grav*2));
 				
 			if(i!=partList.length-1){
 				var differ = partList[i].pos.subtract(partList[partList.length-1].pos);
@@ -193,20 +207,20 @@ $(document).ready(function(){
 	}
 	
 	function redraw(){
-		canX.fillStyle = "rgb(100,100,255)";
+		canX.fillStyle = syColor; 
 		canX.clearRect(0,0,800,300);
 		canX.fillRect(0,0,800,300);
 		
 		//the ground
 		canX.beginPath();
-		canX.strokeStyle = "rgb(20,200,20)";
-		canX.fillStyle = "rgb(102,51,0)";
+		canX.strokeStyle = sColor; 
+		canX.fillStyle = gColor; 
 		canX.moveTo(wallList[0].x1-view.x,wallList[0].y1-view.y);
 		for(var i = 0;i < wallList.length;i++){
 			canX.lineTo(wallList[i].x2-view.x,wallList[i].y2-view.y);
 		}
-		canX.lineTo(wallList[wallList.length-1].x2-view.x,wallList[wallList.length-1].y2-view.y+1000);
-		canX.lineTo(wallList[0].x1-view.x,wallList[0].y1-view.y+1000);
+		canX.lineTo(wallList[wallList.length-1].x2-view.x,yMax+200-view.y);
+		canX.lineTo(wallList[0].x1-view.x,yMax+200-view.y);
 		canX.closePath();
 		canX.lineWidth = 10;
 		canX.fill();
@@ -227,6 +241,19 @@ $(document).ready(function(){
 		canX.lineWidth = 1;
 		canX.stroke();
 		canX.fillStyle="rgb(255,0,0)";
+		canX.fill();
+		
+		//WATER:
+		canX.beginPath();
+		canX.moveTo(0,waterLevel-view.y);
+		canX.lineTo(800,waterLevel-view.y);
+		canX.lineTo(800,yMax+200-view.y);
+		canX.lineTo(0,yMax+200-view.y);
+		canX.closePath();
+		canX.strokeStyle = "rgb(0,0,255)";
+		canX.lineWidth = 8;
+		canX.fillStyle = "rgba(0,100,255,.8)";
+		canX.stroke();
 		canX.fill();
 		
 		if(devmode){
