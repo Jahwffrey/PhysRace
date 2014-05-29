@@ -4,6 +4,7 @@ var globalTime = 0;
 var partList = [];
 var bindList = [];
 var wallList = [];
+var changeList = [];
 var keys = [];
 var num = 0;
 var bindNum = 0;
@@ -33,9 +34,19 @@ var speed = .01*perTime; // how fast the blob accelerates
 var waterLevel = 2000; //y level from 0 of the water level
 var devmode = false; //show behind the scenes things or not
 var eldrichMonstrosities = false; //really stupid if you set to true
-var gColorO = [Math.round(Math.random()*255),Math.round(Math.random()*255),Math.round(Math.random()*255)]//[100,100,100]; //Color of the ground
-var sColorO = [Math.round(Math.random()*255),Math.round(Math.random()*255),Math.round(Math.random()*255)]//[150,150,150]; //Color of the surface
-var syColorO = [Math.round(Math.random()*255),Math.round(Math.random()*255),Math.round(Math.random()*255)]//[80,80,235];//Color of the sky
+var gColorO = [100,100,100]; //Color of the ground
+var sColorO = [150,150,150]; //Color of the surface
+var syColorO = [80,80,235];//Color of the sky
+
+//A cool purple ground w/ dark sky. make it something?
+/*
+gColor
+"rgb(29,24,84)"
+sColor
+"rgb(97,18,214)"
+syColor
+"rgb(4,44,8)"
+*/
 
 
 //Shape perameters:
@@ -104,7 +115,9 @@ function generateWorld(){
 	var worldType = 4; //0 = Plains
 	do{
 		worldType = Math.round(Math.random()*4);
-		gLen = Math.min(50+Math.round(Math.random()*200),fullLen);
+		var a = {"x":xBegin,"type":worldType}
+		changeList.push(a);
+		gLen = Math.min(50+Math.round(Math.random()*100),fullLen);
 		fullLen = fullLen - gLen;
 		switch(worldType){
 			case 0:
@@ -112,7 +125,7 @@ function generateWorld(){
 				for(var i = 0;i < gLen;i++){
 					xNext = xBegin+50+Math.random()*150;
 					yNext = yBegin-20+Math.random()*40;
-					makeWall(xBegin,yBegin,xNext,yNext);
+					makeWall(xBegin,yBegin,xNext,yNext,0);
 					xBegin = xNext;
 					yBegin = yNext;
 				}
@@ -124,7 +137,7 @@ function generateWorld(){
 					yNext = yBegin+2+Math.random()*100;
 					if(yNext>waterLevel-100) yNext = waterLevel-130;
 					if(yNext>yMax) yMax = yNext;
-					makeWall(xBegin,yBegin,xNext,yNext);
+					makeWall(xBegin,yBegin,xNext,yNext,1);
 					xBegin = xNext;
 					yBegin = yNext;
 				}
@@ -140,7 +153,7 @@ function generateWorld(){
 						yNext = yBegin-10-Math.random()*40;
 					}
 					if(yNext>yMax) yMax = yNext;
-					makeWall(xBegin,yBegin,xNext,yNext);
+					makeWall(xBegin,yBegin,xNext,yNext,2);
 					xBegin = xNext;
 					yBegin = yNext;
 				}
@@ -150,7 +163,7 @@ function generateWorld(){
 				for(var i = 0;i < gLen;i++){
 					xNext = xBegin+10+Math.random()*200;
 					yNext = yBegin-60+Math.random()*120;
-					makeWall(xBegin,yBegin,xNext,yNext);
+					makeWall(xBegin,yBegin,xNext,yNext,3);
 					xBegin = xNext;
 					yBegin = yNext;
 				}
@@ -161,14 +174,14 @@ function generateWorld(){
 					if(i%2===0){
 						xNext = xBegin;
 						yNext = yBegin-20+Math.random()*40;
-						makeWall(xBegin,yBegin,xNext,yNext);
+						makeWall(xBegin,yBegin,xNext,yNext,4);
 						xBegin = xNext;
 						yBegin = yNext;
 					}
 					else{
 						xNext = xBegin+20+Math.random()*30;
 						yNext = yBegin;
-						makeWall(xBegin,yBegin,xNext,yNext);
+						makeWall(xBegin,yBegin,xNext,yNext,4);
 						xBegin = xNext;
 						yBegin = yNext;
 					}
@@ -192,8 +205,43 @@ function makeBind(num1,num2,dist,stiff){
 	bindNum+=1;
 }
 
-function makeWall(x1,y1,x2,y2){
-	wallList.push(new wall(x1,y1,x2,y2));
+function makeWall(x1,y1,x2,y2,type){
+	wallList.push(new wall(x1,y1,x2,y2,type));
+}
+
+function changeColors(type){
+	switch(type){
+		case 0: //Flatlands
+			cChange = true;
+			gColorO = [181,128,66];
+			sColorO = [251,223,110];
+			syColorO = [100,100,255];
+			break;
+		case 1: //Cliff
+			cChange = true;
+			gColorO = [230,141,97];
+			sColorO = [149,50,30];
+			syColorO = [125,170,211];
+			break;
+		case 2: //Valley
+			cChange = true;
+			gColorO = [86,132,45];
+			sColorO = [120,166,100];
+			syColorO = [125,170,211];
+			break;
+		case 3: //Rocky
+			cChange = true;
+			gColorO = [100,100,100];
+			sColorO = [150,150,150]; 
+			syColorO = [80,80,235];
+			break;
+		case 4: //Steps
+			cChange = true;
+			gColorO = [70,70,70];
+			sColorO = [10,10,10]; 
+			syColorO = [125,170,211];
+			break;
+	}
 }
 
 $(document).ready(function(){
@@ -203,6 +251,10 @@ $(document).ready(function(){
 	function simulate(elapsedTime){
 		view.x = (partList[0].pos.x+partList[Math.round(numPoints/2)].pos.x)/2 - 400;
 		view.y = (partList[0].pos.y+partList[Math.round(numPoints/2)].pos.y)/2 - 150;
+		if(changeList.length > 0 && partList[partList.length-1].pos.x > changeList[0].x){
+			changeColors(changeList[0].type);
+			changeList.splice(0,1);
+		}
 		var elapsedSq = elapsedTime*elapsedTime;
 		if(83 in keys){
 			partList[partList.length-1].acc = partList[partList.length-1].acc.add(new vector2(0,grav*100));
