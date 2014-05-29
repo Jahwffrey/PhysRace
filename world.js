@@ -28,7 +28,7 @@ var eldrichMonstrosities = false; //really stupid if you set to true
 //Shape perameters:
 var numPoints = 30;
 var perimeter = 200;
-var numSides = 8;
+var numSides = 4;
 
 
 var xStart = 400;
@@ -38,6 +38,8 @@ var yFirst = yStart;
 var sideLen = perimeter/numSides;
 var numPerSide = Math.round(numPoints/numSides);
 numPoints = numPerSide*numSides;
+
+//COMMENCE THE SHAPE CREATION---------------------------------------------------
 
 var theta = 0;
 for(var i = 0;i < numSides;i++){
@@ -73,19 +75,35 @@ makePart(midX,midY,1,0,0);
 for(var i = 0;i < partList.length-1;i++){
 	makeBind(i,partList.length-1,-1,jelloConst);
 }
+//END THE SHAPE CREATION---------------------------------------------------
 
+
+//WORLD CREATION-----------------------------------------------------------
 var xBegin = 0;
 var yBegin = 250;
 var xNext = 0;
 var yNext = 0;
-for(var i = 0;i < 200;i++){
-	xNext = xBegin+10+Math.random()*200;
-	yNext = yBegin-80+Math.random()*160;
+var gLength = 200;
+
+for(var i = 0;i < gLength;i++){
+	xNext = xBegin+40+Math.random()*50;
+	yNext = yBegin-10-Math.random()*40;
 	makeWall(xBegin,yBegin,xNext,yNext);
 	xBegin = xNext;
 	yBegin = yNext;
 }
 
+//rocky:
+/*
+for(var i = 0;i < gLength;i++){
+	xNext = xBegin+10+Math.random()*200;
+	yNext = yBegin-60+Math.random()*120;
+	makeWall(xBegin,yBegin,xNext,yNext);
+	xBegin = xNext;
+	yBegin = yNext;
+}
+*/
+//END WORLD CREATION-------------------------------------------------------
 
 function makePart(x,y,mass,hspeed,vspeed){
 	num+=1;
