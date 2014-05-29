@@ -15,7 +15,14 @@ var timeLeftOver = 0;
 var fixedDelta = 16;
 var perTime = 1000;
 var fixedTimeChange = fixedDelta/perTime;
-var yMax = 0;
+var yMax = 2000;
+var cChange = true;
+var gColorF = [102,51,0];
+var sColorF = [20,200,20];
+var syColorF = [100,100,255];
+var gColor = "rgb("+gColorF[0]+","+gColorF[1]+","+gColorF[2]+")";
+var sColor = "rgb("+sColorF[0]+","+sColorF[1]+","+sColorF[2]+")";
+var syColor = "rgb("+syColorF[0]+","+syColorF[1]+","+syColorF[2]+")";
 
 //Pararmeters:
 var numTimes = 10; //Higher means more accurate physics but slower speed;
@@ -26,18 +33,18 @@ var speed = .01*perTime; // how fast the blob accelerates
 var waterLevel = 2000; //y level from 0 of the water level
 var devmode = false; //show behind the scenes things or not
 var eldrichMonstrosities = false; //really stupid if you set to true
-var gColor = "rgb(102,51,0)"; //Color of the ground
-var sColor = "rgb(20,200,20)"; //Color of the surface
-var syColor = "rgb(100,100,255)";//Color of the sky
+var gColorO = [Math.round(Math.random()*255),Math.round(Math.random()*255),Math.round(Math.random()*255)]//[100,100,100]; //Color of the ground
+var sColorO = [Math.round(Math.random()*255),Math.round(Math.random()*255),Math.round(Math.random()*255)]//[150,150,150]; //Color of the surface
+var syColorO = [Math.round(Math.random()*255),Math.round(Math.random()*255),Math.round(Math.random()*255)]//[80,80,235];//Color of the sky
 
 
 //Shape perameters:
 var numPoints = 30;
 var perimeter = 200;
-var numSides = 4;
+var numSides = 3+Math.round(Math.random()*10);
 
 
-var xStart = 400;
+var xStart = 100;
 var xFirst = xStart;
 var yStart = 100;
 var yFirst = yStart;
@@ -81,41 +88,95 @@ makePart(midX,midY,1,0,0);
 for(var i = 0;i < partList.length-1;i++){
 	makeBind(i,partList.length-1,-1,jelloConst);
 }
+
+generateWorld();
 //END THE SHAPE CREATION---------------------------------------------------
 
 
 //WORLD CREATION-----------------------------------------------------------
-var xBegin = 0;
-var yBegin = 250;
-var xNext = 0;
-var yNext = 0;
-var gLen = 200;
-
-//Valley:
-for(var i = 0;i < gLen;i++){
-	xNext = xBegin+40+Math.random()*50;
-	if(i<gLen/2){
-		yNext = yBegin+10+Math.random()*40;
-	}
-	else{
-		yNext = yBegin-10-Math.random()*40;
-	}
-	if(yNext>yMax) yMax = yNext;
-	makeWall(xBegin,yBegin,xNext,yNext);
-	xBegin = xNext;
-	yBegin = yNext;
+function generateWorld(){
+	var xBegin = 0;
+	var yBegin = 250;
+	var xNext = 0;
+	var yNext = 0;
+	var fullLen = 800;
+	var gLen = 0;
+	var worldType = 4; //0 = Plains
+	do{
+		worldType = Math.round(Math.random()*4);
+		gLen = Math.min(50+Math.round(Math.random()*200),fullLen);
+		fullLen = fullLen - gLen;
+		switch(worldType){
+			case 0:
+				//Flatlands
+				for(var i = 0;i < gLen;i++){
+					xNext = xBegin+50+Math.random()*150;
+					yNext = yBegin-20+Math.random()*40;
+					makeWall(xBegin,yBegin,xNext,yNext);
+					xBegin = xNext;
+					yBegin = yNext;
+				}
+				break;
+			case 1:
+				//Cliff
+				for(var i = 0;i < gLen;i++){
+					xNext = xBegin+10+Math.random()*10;
+					yNext = yBegin+2+Math.random()*100;
+					if(yNext>waterLevel-100) yNext = waterLevel-130;
+					if(yNext>yMax) yMax = yNext;
+					makeWall(xBegin,yBegin,xNext,yNext);
+					xBegin = xNext;
+					yBegin = yNext;
+				}
+				break;
+			case 2:
+				//Valley
+				for(var i = 0;i < gLen;i++){
+					xNext = xBegin+40+Math.random()*50;
+					if(i<gLen/2){
+						yNext = yBegin+10+Math.random()*40;
+					}
+					else{
+						yNext = yBegin-10-Math.random()*40;
+					}
+					if(yNext>yMax) yMax = yNext;
+					makeWall(xBegin,yBegin,xNext,yNext);
+					xBegin = xNext;
+					yBegin = yNext;
+				}
+				break;
+			case 3:
+				//Rocky
+				for(var i = 0;i < gLen;i++){
+					xNext = xBegin+10+Math.random()*200;
+					yNext = yBegin-60+Math.random()*120;
+					makeWall(xBegin,yBegin,xNext,yNext);
+					xBegin = xNext;
+					yBegin = yNext;
+				}
+				break;
+			case 4:
+				//Steps
+				for(var i = 0;i < gLen;i++){
+					if(i%2===0){
+						xNext = xBegin;
+						yNext = yBegin-20+Math.random()*40;
+						makeWall(xBegin,yBegin,xNext,yNext);
+						xBegin = xNext;
+						yBegin = yNext;
+					}
+					else{
+						xNext = xBegin+20+Math.random()*30;
+						yNext = yBegin;
+						makeWall(xBegin,yBegin,xNext,yNext);
+						xBegin = xNext;
+						yBegin = yNext;
+					}
+				}
+				break;
+		}
+	} while(fullLen>0);
 }
-
-//rocky:
-/*
-for(var i = 0;i < gLen;i++){
-	xNext = xBegin+10+Math.random()*200;
-	yNext = yBegin-60+Math.random()*120;
-	makeWall(xBegin,yBegin,xNext,yNext);
-	xBegin = xNext;
-	yBegin = yNext;
-}
-*/
 //END WORLD CREATION-------------------------------------------------------
 
 function makePart(x,y,mass,hspeed,vspeed){
@@ -207,6 +268,30 @@ $(document).ready(function(){
 	}
 	
 	function redraw(){
+		if(cChange){
+			cChange = false;
+			for(i in gColorF){
+				if(gColorF[i]!=gColorO[i]){
+					cChange = true;
+					(gColorF[i]>gColorO[i]) ? gColorF[i]-=1 : gColorF[i]+=1;
+				}
+			}
+			for(i in sColorF){
+				if(sColorF[i]!=sColorO[i]){
+					cChange = true;
+					(sColorF[i]>sColorO[i]) ? sColorF[i]-=1 : sColorF[i]+=1;
+				}
+			}
+			for(i in syColorF){
+				if(syColorF[i]!=syColorO[i]){
+					cChange = true;
+					(syColorF[i]>syColorO[i]) ? syColorF[i]-=1 : syColorF[i]+=1;
+				}
+			}
+			gColor = "rgb("+gColorF[0]+","+gColorF[1]+","+gColorF[2]+")";
+			sColor = "rgb("+sColorF[0]+","+sColorF[1]+","+sColorF[2]+")";
+			syColor = "rgb("+syColorF[0]+","+syColorF[1]+","+syColorF[2]+")";
+		}
 		canX.fillStyle = syColor; 
 		canX.clearRect(0,0,800,300);
 		canX.fillRect(0,0,800,300);
@@ -301,12 +386,6 @@ $(document).ready(function(){
 			howFarDown = evnt.target.offsetTop+1;
 			mouse.x = mouse.x-howFarRight;
 			mouse.y = mouse.y-howFarDown;
-		})
-		.mousedown(function(){
-			//mouse.down = true;
-		})
-		.mouseup(function(){
-			mouse.down = false;
 		});
 		
 	$(document)
