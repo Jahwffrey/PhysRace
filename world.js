@@ -8,20 +8,27 @@ var keys = [];
 var num = 0;
 var bindNum = 0;
 var TAU = 2*3.141592638;
+var date  = new Date();
+var lastTime = date.getTime();
+var currentTime = date.getTime();
+var timeLeftOver = 0;
+var fixedDelta = 16;
+var perTime = 1000;
+var fixedTimeChange = fixedDelta/perTime;
 
 //Pararmeters:
 var numTimes = 10; //Higher means more accurate physics but slower speed;
 var jelloConst = .00008//.0002; //Stiffness, from 0 to .5
 var fricConst = 1; //how much friction the ground has, 0 to 1
-var grav =.0098; //acceleration due to gravity
-var speed = .005; // how fast the blob accelerates
+var grav = .016*perTime; //acceleration due to gravity
+var speed = .01*perTime; // how fast the blob accelerates
 var devmode = false; //show behind the scenes things or not
 var eldrichMonstrosities = false; //really stupid if you set to true
 
 //Shape perameters:
 var numPoints = 30;
 var perimeter = 200;
-var numSides = 4;
+var numSides = 8;
 
 
 var xStart = 400;
@@ -101,29 +108,17 @@ $(document).ready(function(){
 	var can = document.getElementById("canv");
 	var canX = can.getContext("2d");
 	
-	function simulate(){
-		globalTime+=1;
+	function simulate(elapsedTime){
 		view.x = (partList[0].pos.x+partList[Math.round(numPoints/2)].pos.x)/2 - 400;
 		view.y = (partList[0].pos.y+partList[Math.round(numPoints/2)].pos.y)/2 - 150;
-		/*if(68 in keys){
-			partList[partList.length-1].acc = partList[partList.length-1].acc.add(new vector2(speed,0));
-		}
-		if(65 in keys){
-			partList[partList.length-1].acc = partList[partList.length-1].acc.add(new vector2(-speed,0));
-		}*/
+		var elapsedSq = elapsedTime*elapsedTime;
 		if(83 in keys){
 			partList[partList.length-1].acc = partList[partList.length-1].acc.add(new vector2(0,grav*100));
 		}
-		//box bounds, simulate, and reset
+			//box bounds, simulate, and reset
 		for(var i = 0;i < partList.length;i++){
-			partList[i].vel = partList[i].pos.subtract(partList[i].prevPos);
-			if(partList[i].friction){
-				partList[i].vel = partList[i].vel.add(new vector2(-(partList[i].vel.x)*fricConst,0)); //friction
-			}
-			partList[i].friction = false;
-			if(partList[i].vel.y<-10) partList[i].vel.y = partList[i].vel.y/1.5;
 			partList[i].acc = partList[i].acc.add(new vector2(0,grav));
-			
+				
 			if(i!=partList.length-1){
 				var differ = partList[i].pos.subtract(partList[partList.length-1].pos);
 				if(68 in keys){
@@ -139,7 +134,12 @@ $(document).ready(function(){
 					else if(differ.x<0 && differ.y>0) partList[i].acc = partList[i].acc.add(new vector2(speed,speed));
 				}
 			}
-			partList[i].step(globalTime);
+			partList[i].vel = partList[i].pos.subtract(partList[i].prevPos);
+			var nextPosX = partList[i].pos.x + partList[i].vel.x + partList[i].acc.x * elapsedSq;
+			var nextPosY = partList[i].pos.y + partList[i].vel.y + partList[i].acc.y * elapsedSq;
+			partList[i].prevPos.x = partList[i].pos.x;
+			partList[i].prevPos.y = partList[i].pos.y;
+			partList[i].pos = new vector2(nextPosX,nextPosY);
 			partList[i].acc.set(0,0);
 		}
 		//constraints
@@ -230,8 +230,20 @@ $(document).ready(function(){
 	}
 	
 	function go(){
-		simulate();
-		redraw();
+		date = new Date();
+		currentTime = date.getTime();
+		var change = currentTime - lastTime;
+		lastTime = currentTime;
+		var steps = Math.floor((change + timeLeftOver)/fixedDelta);
+		steps = Math.min(steps,20);
+		if(steps<1) steps = 1;
+		timeLeftOver = change - (steps * fixedDelta);
+		
+		for(var i = 0;i < steps;i++){
+			simulate(fixedTimeChange);
+		}
+		
+		redraw();	
 	}
 	
 	var repeat = setInterval(function(){go()},1);

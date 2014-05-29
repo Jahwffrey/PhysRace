@@ -9,13 +9,3 @@ function pointMass(x,y,mass,sXVel,sYVel,id){
 	this.id = id;
 	this.friction = false;
 }
-
-pointMass.prototype.step = function(currentTime){
-	var timePassed = (currentTime-this.currTime);
-	this.currTime = currentTime;
-	
-	var nextPos = this.pos.add(this.vel.add(this.acc));
-	this.prevPos.x = this.pos.x;
-	this.prevPos.y = this.pos.y;
-	this.pos = nextPos;
-}
