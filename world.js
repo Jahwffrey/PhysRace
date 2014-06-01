@@ -5,6 +5,7 @@ var partList = [];
 var bindList = [];
 var wallList = [];
 var changeList = [];
+var otherPeopleList = [];
 var keys = [];
 var num = 0;
 var bindNum = 0;
@@ -43,9 +44,9 @@ var syColorO = [255,255,255];//Color of the sky
 
 
 //Shape perameters:
-var numPoints = 30;
+var numPoints = 5;
 var perimeter = 200;
-var numSides = 3+Math.round(Math.random()*10);
+var numSides = 3//+Math.round(Math.random()*10);
 
 
 var xStart = 100;
@@ -166,8 +167,7 @@ $(document).ready(function(){
 				break;
 			case 3:
 				if(thingsLoaded===requiredLoad)
-				var someBlob = msg.data;
-				drawThing(someBlob);
+				otherPeopleList = msg.data;
 				break;
 		}
 	};
@@ -196,8 +196,8 @@ $(document).ready(function(){
 		canX.stroke();
 		canX.fillStyle="rgb(255,0,0)";
 		canX.fill();
-	};
-	
+	}
+
 	
 	//THE REST OF THE FXN:
 	function simulate(elapsedTime){
@@ -346,6 +346,12 @@ $(document).ready(function(){
 		canX.stroke();
 		canX.fill();
 		
+		//OTHER PEOPLE:
+		for(var i = 0;i < otherPeopleList.length;i++){
+			if(i!=me){
+				drawThing(otherPeopleList[i]);
+			}
+		}
 		if(devmode){
 			canX.fillStyle="rgb(0,0,0)"
 			for(var i = 0;i < partList.length;i++){

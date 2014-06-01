@@ -18,11 +18,9 @@ wss.on('connection',function(ws){
 	person+=1;
 	var broadcast = setInterval(function(){
 		for(i in personList){
-			if(i!=me){
-				ws.send(JSON.stringify({data: personList[i],flag: 3}));//3 = blob position
-			}
+			ws.send(JSON.stringify({data: personList,flag: 3}));//3 = blob position
 		}
-	},10);
+	},5);
 	ws.on('message',function(message){
 		var msg = JSON.parse(message);
 		switch(msg.flag){
