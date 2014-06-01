@@ -12,10 +12,16 @@ var personList = [];
 wss.on('connection',function(ws){
 	personList.push(person);
 	var me = person;
+	console.log("Person "+me+" connected");
 	ws.send(JSON.stringify({data: wallList,flag: 0}));//Flag 0 = wallList
 	ws.send(JSON.stringify({data: changeList,flag: 1}));//Flag 1 = changeList
 	ws.send(JSON.stringify({data: {wL: waterLevel,yM: yMax,whom: person},flag: 2}));//Flag 2 = etc var
 	person+=1;
+	
+	function reorganize(pivot){
+		if(me>pivot) me-=1;
+	}
+	
 	var broadcast = setInterval(function(){
 		ws.send(JSON.stringify({data: personList,flag: 3}));//3 = blob position
 	},5);
@@ -27,9 +33,13 @@ wss.on('connection',function(ws){
 				break;
 		}
 	});
-	ws.on('close',function()){
+	ws.on('close',function(){
 		clearInterval(broadcast);
-	};
+		reorganize(me);
+		personList.pop();
+		person-=1;
+		console.log("Person "+me+" disconnected.");
+	});
 })
 
 //This code is meant to generate the world!
