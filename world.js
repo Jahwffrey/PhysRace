@@ -28,7 +28,10 @@ var sColor = "rgb(255,255,255)";
 var syColor = "rgb(255,255,255)";
 var thingsLoaded  = 0;
 var me = 0;
+var connected = false;
 var requiredLoad = 3;
+var connection;
+var canDraw = true;
 
 //Pararmeters:
 var numTimes = 10; //Higher means more accurate physics but slower speed;
@@ -145,41 +148,57 @@ function changeColors(type){
 $(document).ready(function(){
 	var can = document.getElementById("canv");
 	var canX = can.getContext("2d");
-	var connection = new WebSocket("ws://localhost:4545");
 	
-	//SERVER FUNCTIONs:
-	connection.onmessage = function(evnt){
-		var msg = JSON.parse(evnt.data);
-		switch(msg.flag){
-			case 0:
-				wallList = msg.data;
-				thingsLoaded+=1;
-				break;
-			case 1:
-				changeList = msg.data;
-				thingsLoaded+=1;
-				break;
-			case 2:
-				waterLevel = msg.data.wL;
-				yMax = msg.data.yM;
-				me = msg.data.whom;
-				thingsLoaded+=1;
-				break;
-			case 3:
-				if(thingsLoaded===requiredLoad){
-					otherPeopleList = msg.data;
-				}
-				break;
+	$('#form').submit(function(evnt){
+		makeConnection($('#ip').val());
+		evnt.preventDefault();
+	});
+	
+	//SERVER COMMANDS:
+	function makeConnection(ip){
+		try{
+			if(!connected){
+				connection = new WebSocket("ws:"+ip);
+				connected = true;
+			}
+		} catch(err){
+			console.log("ERROR: "+err);
 		}
-	};
-	
-	connection.onerror = function(evnt){
-		console.log(evnt.data);
+		if(connected){
+			connection.onmessage = function(evnt){
+				var msg = JSON.parse(evnt.data);
+				switch(msg.flag){
+					case 0:
+						wallList = msg.data;
+						thingsLoaded+=1;
+						break;
+					case 1:
+						changeList = msg.data;
+						thingsLoaded+=1;
+						break;
+					case 2:
+						waterLevel = msg.data.wL;
+						yMax = msg.data.yM;
+						me = msg.data.whom;
+						thingsLoaded+=1;
+						break;
+					case 3:
+						if(thingsLoaded===requiredLoad && canDraw){
+							otherPeopleList = msg.data;
+						}
+						break;
+				}
+			}
+			
+			connection.onerror = function(evnt){
+				console.log(evnt.data);
+			}
+			
+			connection.onclose = function(evnt){
+				console.log("Bye!");
+			}
+		}
 	}
-	
-	connection.onclose = function(evnt){
-		console.log("Bye!");
-	};
 	
 	//THE REST OF THE FXN:
 	function simulate(elapsedTime){
@@ -316,10 +335,14 @@ $(document).ready(function(){
 		canX.fill();
 		
 		//OTHER PEOPLE:
-		for(var i = 0;i < otherPeopleList.length;i++){
-			if(i!=me && otherPeopleList[i].left!=1){
-				drawThing(otherPeopleList[i].pList);
+		if(canDraw){
+			canDraw = false;
+			for(var i = 0;i < otherPeopleList.length;i++){
+				if(i!=me && otherPeopleList[i].left!=1){
+					drawThing(otherPeopleList[i].pList);
+				}
 			}
+			canDraw = true;
 		}
 		
 		//WATER:
