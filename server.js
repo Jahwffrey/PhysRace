@@ -5,42 +5,65 @@ var changeList = [];
 var waterLevel = 2000;
 var yMax = 2000;
 
-var person = 0;
 var personList = [];
-
+var pLen = 0;
+personList.length = 0;
 
 wss.on('connection',function(ws){
-	personList.push(person);
-	var me = person;
+	console.log("Attempted Connection");
+	//Find a place for them:
+	var me = 0;
+	if(personList.length===0){
+		personList.push({pList: [],who: 0,left:0});
+		me = 0;	
+		pLen = 1;
+	}
+	else{
+		for(var i = 0;i <= pLen;i++){
+			if(!(i===pLen)){
+				if(personList[i].left === 1){
+					personList[i].left = 0;
+					me = i;
+					i = pLen + 1;
+				}
+			}
+			else{
+				personList.push({pList: [],who: i,left:0});
+				pLen += 1;
+				me = i;
+				i = pLen+1;
+			}
+		}
+	}
+	
+	//They are in! Send what is needed:
 	console.log("Person "+me+" connected");
 	ws.send(JSON.stringify({data: wallList,flag: 0}));//Flag 0 = wallList
 	ws.send(JSON.stringify({data: changeList,flag: 1}));//Flag 1 = changeList
-	ws.send(JSON.stringify({data: {wL: waterLevel,yM: yMax,whom: person},flag: 2}));//Flag 2 = etc var
-	person+=1;
+	ws.send(JSON.stringify({data: {wL: waterLevel,yM: yMax,whom: me},flag: 2}));//Flag 2 = etc var
 	
-	function reorganize(pivot){
-		if(me>pivot) me-=1;
-	}
-	
+	//Send stuff as needed:
 	var broadcast = setInterval(function(){
 		ws.send(JSON.stringify({data: personList,flag: 3}));//3 = blob position
 	},5);
+	
+	//What to do when get a message:
 	ws.on('message',function(message){
 		var msg = JSON.parse(message);
 		switch(msg.flag){
 			case 0://positions
-				personList[msg.who] = msg.message;
+				personList[msg.who] = {pList: msg.message,who: msg.who,left: 0};
 				break;
 		}
 	});
+	
+	//Somebody left:
 	ws.on('close',function(){
 		clearInterval(broadcast);
-		reorganize(me);
-		personList.pop();
-		person-=1;
+		personList[me].left = 1;
 		console.log("Person "+me+" disconnected.");
 	});
-})
+});
 
 //This code is meant to generate the world!
 

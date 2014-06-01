@@ -20,9 +20,9 @@ var fixedTimeChange = fixedDelta/perTime;
 var yMax = 0;
 var waterLevel = 0; 
 var cChange = true;
-var gColorF = [0,0,0]; // Actually change the start color
-var sColorF = [0,0,0];
-var syColorF = [0,0,0];
+var gColorF = [255,255,255]; // Actually change the start color
+var sColorF = [255,255,255];
+var syColorF = [255,255,255];
 var gColor = "rgb(255,255,255)";
 var sColor = "rgb(255,255,255)";
 var syColor = "rgb(255,255,255)";
@@ -181,25 +181,6 @@ $(document).ready(function(){
 		console.log("Bye!");
 	};
 	
-	function drawThing(whatThing){
-		canX.beginPath();
-		canX.strokeStyle="rgb(0,0,0)";
-		canX.moveTo(whatThing[0].pos.x-view.x,whatThing[0].pos.y-view.y);
-		for(var i = 0;i < numPoints-1;i++){
-			var next = i + 1;
-			if(next===whatThing.length-1){
-				next = 0;
-			}
-			canX.lineTo(whatThing[next].pos.x-view.x,whatThing[next].pos.y-view.y);
-		}
-		canX.closePath();
-		canX.lineWidth = 1;
-		canX.stroke();
-		canX.fillStyle="rgb(255,0,0)";
-		canX.fill();
-	}
-
-	
 	//THE REST OF THE FXN:
 	function simulate(elapsedTime){
 		view.x = (partList[0].pos.x+partList[Math.round(numPoints/2)].pos.x)/2 - 400;
@@ -334,6 +315,13 @@ $(document).ready(function(){
 		canX.fillStyle="rgb(255,0,0)";
 		canX.fill();
 		
+		//OTHER PEOPLE:
+		for(var i = 0;i < otherPeopleList.length;i++){
+			if(i!=me && otherPeopleList[i].left!=1){
+				drawThing(otherPeopleList[i].pList);
+			}
+		}
+		
 		//WATER:
 		canX.beginPath();
 		canX.moveTo(0,waterLevel-view.y);
@@ -347,12 +335,6 @@ $(document).ready(function(){
 		canX.stroke();
 		canX.fill();
 		
-		//OTHER PEOPLE:
-		for(var i = 0;i < otherPeopleList.length;i++){
-			if(i!=me){
-				drawThing(otherPeopleList[i]);
-			}
-		}
 		if(devmode){
 			canX.fillStyle="rgb(0,0,0)"
 			for(var i = 0;i < partList.length;i++){
@@ -369,6 +351,24 @@ $(document).ready(function(){
 			}	
 		}
 		
+	}
+	
+	function drawThing(whatThing){
+		canX.beginPath();
+		canX.strokeStyle="rgb(0,0,0)";
+		canX.moveTo(whatThing[0].pos.x-view.x,whatThing[0].pos.y-view.y);
+		for(var i = 0;i < whatThing.length-1;i++){
+			var next = i + 1;
+			if(next===whatThing.length-1){
+				next = 0;
+			}
+			canX.lineTo(whatThing[next].pos.x-view.x,whatThing[next].pos.y-view.y);
+		}
+		canX.closePath();
+		canX.lineWidth = 1;
+		canX.stroke();
+		canX.fillStyle="rgb(255,0,0)";
+		canX.fill();
 	}
 	
 	function go(){
