@@ -16,14 +16,18 @@ var timeLeftOver = 0;
 var fixedDelta = 16;
 var perTime = 1000;
 var fixedTimeChange = fixedDelta/perTime;
-var yMax = 2000;
+var yMax = 0;
+var waterLevel = 0; 
 var cChange = true;
-var gColorF = [255,255,255]; // Actually change the start color
-var sColorF = [255,255,255];
-var syColorF = [255,255,255];
+var gColorF = [0,0,0]; // Actually change the start color
+var sColorF = [0,0,0];
+var syColorF = [0,0,0];
 var gColor = "rgb(255,255,255)";
 var sColor = "rgb(255,255,255)";
 var syColor = "rgb(255,255,255)";
+var thingsLoaded  = 0;
+var me = 0;
+var requiredLoad = 3;
 
 //Pararmeters:
 var numTimes = 10; //Higher means more accurate physics but slower speed;
@@ -31,22 +35,11 @@ var jelloConst = .00008//.0002; //Stiffness, from 0 to .5
 var fricConst = 1; //how much friction the ground has, 0 to 1
 var grav = .016*perTime; //acceleration due to gravity
 var speed = .01*perTime; // how fast the blob accelerates
-var waterLevel = 2000; //y level from 0 of the water level
 var devmode = false; //show behind the scenes things or not
 var eldrichMonstrosities = false; //really stupid if you set to true
 var gColorO = [255,255,255]; //Color of the ground
 var sColorO = [255,255,255]; //Color of the surface
 var syColorO = [255,255,255];//Color of the sky
-
-//A cool purple ground w/ dark sky. make it something?
-/*
-gColor
-"rgb(29,24,84)"
-sColor
-"rgb(97,18,214)"
-syColor
-"rgb(4,44,8)"
-*/
 
 
 //Shape perameters:
@@ -100,99 +93,6 @@ for(var i = 0;i < partList.length-1;i++){
 	makeBind(i,partList.length-1,-1,jelloConst);
 }
 
-generateWorld();
-//END THE SHAPE CREATION---------------------------------------------------
-
-
-//WORLD CREATION-----------------------------------------------------------
-function generateWorld(){
-	var xBegin = 0;
-	var yBegin = 250;
-	var xNext = 0;
-	var yNext = 0;
-	var fullLen = 800;
-	var gLen = 0;
-	var worldType = 4; //0 = Plains
-	do{
-		worldType = Math.round(Math.random()*4);
-		var a = {"x":xBegin,"type":worldType}
-		changeList.push(a);
-		gLen = Math.min(50+Math.round(Math.random()*100),fullLen);
-		fullLen = fullLen - gLen;
-		switch(worldType){
-			case 0:
-				//Flatlands
-				for(var i = 0;i < gLen;i++){
-					xNext = xBegin+50+Math.random()*150;
-					yNext = yBegin-20+Math.random()*40;
-					makeWall(xBegin,yBegin,xNext,yNext,0);
-					xBegin = xNext;
-					yBegin = yNext;
-				}
-				break;
-			case 1:
-				//Cliff
-				for(var i = 0;i < gLen;i++){
-					xNext = xBegin+10+Math.random()*10;
-					yNext = yBegin+2+Math.random()*100;
-					if(yNext>waterLevel-100) yNext = waterLevel-130;
-					if(yNext>yMax) yMax = yNext;
-					makeWall(xBegin,yBegin,xNext,yNext,1);
-					xBegin = xNext;
-					yBegin = yNext;
-				}
-				break;
-			case 2:
-				//Valley
-				for(var i = 0;i < gLen;i++){
-					xNext = xBegin+40+Math.random()*50;
-					if(i<gLen/2){
-						yNext = yBegin+10+Math.random()*40;
-					}
-					else{
-						yNext = yBegin-10-Math.random()*40;
-					}
-					if(yNext>yMax) yMax = yNext;
-					makeWall(xBegin,yBegin,xNext,yNext,2);
-					xBegin = xNext;
-					yBegin = yNext;
-				}
-				break;
-			case 3:
-				//Rocky
-				for(var i = 0;i < gLen;i++){
-					xNext = xBegin+10+Math.random()*200;
-					yNext = yBegin-60+Math.random()*120;
-					makeWall(xBegin,yBegin,xNext,yNext,3);
-					xBegin = xNext;
-					yBegin = yNext;
-				}
-				break;
-			case 4:
-				gLen = gLen * 2;
-				//Steps
-				for(var i = 0;i < gLen;i++){
-					if(i%2===0){
-						xNext = xBegin;
-						yNext = yBegin-40+Math.random()*40;
-						makeWall(xBegin,yBegin,xNext,yNext,4);
-						xBegin = xNext;
-						yBegin = yNext;
-					}
-					else{
-						xNext = xBegin+20+Math.random()*30;
-						yNext = yBegin;
-						makeWall(xBegin,yBegin,xNext,yNext,4);
-						xBegin = xNext;
-						yBegin = yNext;
-					}
-				}
-				break;
-		}
-	} while(fullLen>0);
-}
-//END WORLD CREATION-------------------------------------------------------
-
 function makePart(x,y,mass,hspeed,vspeed){
 	num+=1;
 	partList[num-1] = new pointMass(x,y,mass,hspeed,vspeed,num);
@@ -204,10 +104,6 @@ function makeBind(num1,num2,dist,stiff){
 	}
 	bindList[bindNum] = new constraint(partList[num1],partList[num2],dist,stiff);
 	bindNum+=1;
-}
-
-function makeWall(x1,y1,x2,y2,type){
-	wallList.push(new wall(x1,y1,x2,y2,type));
 }
 
 function changeColors(type){
@@ -248,7 +144,62 @@ function changeColors(type){
 $(document).ready(function(){
 	var can = document.getElementById("canv");
 	var canX = can.getContext("2d");
+	var connection = new WebSocket("ws://localhost:4545");
 	
+	//SERVER FUNCTIONs:
+	connection.onmessage = function(evnt){
+		var msg = JSON.parse(evnt.data);
+		switch(msg.flag){
+			case 0:
+				wallList = msg.data;
+				thingsLoaded+=1;
+				break;
+			case 1:
+				changeList = msg.data;
+				thingsLoaded+=1;
+				break;
+			case 2:
+				waterLevel = msg.data.wL;
+				yMax = msg.data.yM;
+				me = msg.data.whom;
+				thingsLoaded+=1;
+				break;
+			case 3:
+				if(thingsLoaded===requiredLoad)
+				var someBlob = msg.data;
+				drawThing(someBlob);
+				break;
+		}
+	};
+	
+	connection.onerror = function(evnt){
+		console.log(evnt.data);
+	}
+	
+	connection.onclose = function(evnt){
+		console.log("Bye!");
+	};
+	
+	function drawThing(whatThing){
+		canX.beginPath();
+		canX.strokeStyle="rgb(0,0,0)";
+		canX.moveTo(whatThing[0].pos.x-view.x,whatThing[0].pos.y-view.y);
+		for(var i = 0;i < numPoints-1;i++){
+			var next = i + 1;
+			if(next===whatThing.length-1){
+				next = 0;
+			}
+			canX.lineTo(whatThing[next].pos.x-view.x,whatThing[next].pos.y-view.y);
+		}
+		canX.closePath();
+		canX.lineWidth = 1;
+		canX.stroke();
+		canX.fillStyle="rgb(255,0,0)";
+		canX.fill();
+	};
+	
+	
+	//THE REST OF THE FXN:
 	function simulate(elapsedTime){
 		view.x = (partList[0].pos.x+partList[Math.round(numPoints/2)].pos.x)/2 - 400;
 		view.y = (partList[0].pos.y+partList[Math.round(numPoints/2)].pos.y)/2 - 150;
@@ -318,6 +269,7 @@ $(document).ready(function(){
 				}
 			}
 		}
+		connection.send(JSON.stringify({message: partList,who: me,flag: 0}));//Flag 0 = partList
 	}
 	
 	function redraw(){
@@ -413,20 +365,22 @@ $(document).ready(function(){
 	}
 	
 	function go(){
-		date = new Date();
-		currentTime = date.getTime();
-		var change = currentTime - lastTime;
-		lastTime = currentTime;
-		var steps = Math.floor((change + timeLeftOver)/fixedDelta);
-		steps = Math.min(steps,20);
-		if(steps<1) steps = 1;
-		timeLeftOver = change - (steps * fixedDelta);
-		
-		for(var i = 0;i < steps;i++){
-			simulate(fixedTimeChange);
+		if(thingsLoaded===requiredLoad){
+			date = new Date();
+			currentTime = date.getTime();
+			var change = currentTime - lastTime;
+			lastTime = currentTime;
+			var steps = Math.floor((change + timeLeftOver)/fixedDelta);
+			steps = Math.min(steps,20);
+			if(steps<1) steps = 1;
+			timeLeftOver = change - (steps * fixedDelta);
+			
+			for(var i = 0;i < steps;i++){
+				simulate(fixedTimeChange);
+			}
+			
+			redraw();
 		}
-		
-		redraw();	
 	}
 	
 	var repeat = setInterval(function(){go()},1);
