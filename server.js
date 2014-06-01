@@ -43,7 +43,7 @@ wss.on('connection',function(ws){
 		ws.send(JSON.stringify({data: changeList,flag: 1}));//Flag 1 = changeList
 		ws.send(JSON.stringify({data: {wL: waterLevel,yM: yMax,whom: me},flag: 2}));//Flag 2 = etc var
 	} catch(err){
-		console.log("ERROR: "+err);
+		console.log(err);
 	}
 	
 	//Send stuff as needed:
@@ -51,7 +51,7 @@ wss.on('connection',function(ws){
 		try{
 			ws.send(JSON.stringify({data: personList,flag: 3}));//3 = blob position
 		} catch(err){
-			console.log("ERROR: "+err);
+			console.log(err);
 		}
 	},5);
 	
