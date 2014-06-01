@@ -17,9 +17,7 @@ wss.on('connection',function(ws){
 	ws.send(JSON.stringify({data: {wL: waterLevel,yM: yMax,whom: person},flag: 2}));//Flag 2 = etc var
 	person+=1;
 	var broadcast = setInterval(function(){
-		for(i in personList){
-			ws.send(JSON.stringify({data: personList,flag: 3}));//3 = blob position
-		}
+		ws.send(JSON.stringify({data: personList,flag: 3}));//3 = blob position
 	},5);
 	ws.on('message',function(message){
 		var msg = JSON.parse(message);
@@ -29,6 +27,9 @@ wss.on('connection',function(ws){
 				break;
 		}
 	});
+	ws.on('close',function()){
+		clearInterval(broadcast);
+	};
 })
 
 //This code is meant to generate the world!

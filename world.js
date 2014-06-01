@@ -44,9 +44,9 @@ var syColorO = [255,255,255];//Color of the sky
 
 
 //Shape perameters:
-var numPoints = 5;
+var numPoints = 30;
 var perimeter = 200;
-var numSides = 3//+Math.round(Math.random()*10);
+var numSides = 3+Math.round(Math.random()*10);
 
 
 var xStart = 100;
@@ -166,8 +166,9 @@ $(document).ready(function(){
 				thingsLoaded+=1;
 				break;
 			case 3:
-				if(thingsLoaded===requiredLoad)
-				otherPeopleList = msg.data;
+				if(thingsLoaded===requiredLoad){
+					otherPeopleList = msg.data;
+				}
 				break;
 		}
 	};
