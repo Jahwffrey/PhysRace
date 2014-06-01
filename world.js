@@ -18,12 +18,12 @@ var perTime = 1000;
 var fixedTimeChange = fixedDelta/perTime;
 var yMax = 2000;
 var cChange = true;
-var gColorF = [102,51,0];
-var sColorF = [20,200,20];
-var syColorF = [100,100,255];
-var gColor = "rgb("+gColorF[0]+","+gColorF[1]+","+gColorF[2]+")";
-var sColor = "rgb("+sColorF[0]+","+sColorF[1]+","+sColorF[2]+")";
-var syColor = "rgb("+syColorF[0]+","+syColorF[1]+","+syColorF[2]+")";
+var gColorF = [255,255,255]; // Actually change the start color
+var sColorF = [255,255,255];
+var syColorF = [255,255,255];
+var gColor = "rgb(255,255,255)";
+var sColor = "rgb(255,255,255)";
+var syColor = "rgb(255,255,255)";
 
 //Pararmeters:
 var numTimes = 10; //Higher means more accurate physics but slower speed;
@@ -34,9 +34,9 @@ var speed = .01*perTime; // how fast the blob accelerates
 var waterLevel = 2000; //y level from 0 of the water level
 var devmode = false; //show behind the scenes things or not
 var eldrichMonstrosities = false; //really stupid if you set to true
-var gColorO = [100,100,100]; //Color of the ground
-var sColorO = [150,150,150]; //Color of the surface
-var syColorO = [80,80,235];//Color of the sky
+var gColorO = [255,255,255]; //Color of the ground
+var sColorO = [255,255,255]; //Color of the surface
+var syColorO = [255,255,255];//Color of the sky
 
 //A cool purple ground w/ dark sky. make it something?
 /*
@@ -169,11 +169,12 @@ function generateWorld(){
 				}
 				break;
 			case 4:
+				gLen = gLen * 2;
 				//Steps
 				for(var i = 0;i < gLen;i++){
 					if(i%2===0){
 						xNext = xBegin;
-						yNext = yBegin-20+Math.random()*40;
+						yNext = yBegin-40+Math.random()*40;
 						makeWall(xBegin,yBegin,xNext,yNext,4);
 						xBegin = xNext;
 						yBegin = yNext;
