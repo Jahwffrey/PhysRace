@@ -57,11 +57,16 @@ wss.on('connection',function(ws){
 	
 	//What to do when get a message:
 	ws.on('message',function(message){
-		var msg = JSON.parse(message);
-		switch(msg.flag){
+		try{
+			var msg = JSON.parse(message);
+			switch(msg.flag){
 			case 0://positions
 				personList[msg.who] = {pList: msg.message,who: msg.who,left: 0};
 				break;
+			}
+		}
+		} catch(err){
+			console.log(err);
 		}
 	});
 	
