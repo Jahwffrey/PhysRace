@@ -12,10 +12,10 @@ personList.length = 0;
 wss.on('connection',function(ws){
 	console.log("Attempted Connection");
 	//Find a place for them:
-	var me = 0;
+	var mee = 0;
 	if(personList.length===0){
 		personList.push({pList: [],who: 0,left:0});
-		me = 0;	
+		mee = 0;	
 		pLen = 1;
 	}
 	else{
@@ -23,25 +23,25 @@ wss.on('connection',function(ws){
 			if(!(i===pLen)){
 				if(personList[i].left === 1){
 					personList[i].left = 0;
-					me = i;
+					mee = i;
 					i = pLen + 1;
 				}
 			}
 			else{
 				personList.push({pList: [],who: i,left:0});
 				pLen += 1;
-				me = i;
+				mee = i;
 				i = pLen+1;
 			}
 		}
 	}
 	
 	//They are in! Send what is needed:
-	console.log("Person "+me+" connected");
+	console.log("Person "+mee+" connected");
 	try{
 		ws.send(JSON.stringify({data: wallList,flag: 0}));//Flag 0 = wallList
 		ws.send(JSON.stringify({data: changeList,flag: 1}));//Flag 1 = changeList
-		ws.send(JSON.stringify({data: {wL: waterLevel,yM: yMax,whom: me},flag: 2}));//Flag 2 = etc var
+		ws.send(JSON.stringify({data: {wL: waterLevel,yM: yMax,whom: mee},flag: 2}));//Flag 2 = etc var
 	} catch(err){
 		console.log(err);
 	}
@@ -73,10 +73,28 @@ wss.on('connection',function(ws){
 	//Somebody left:
 	ws.on('close',function(){
 		clearInterval(broadcast);
-		personList[me].left = 1;
-		console.log("Person "+me+" disconnected.");
+		personList[mee].left = 1;
+		personList[mee].pList = [];
+		console.log("Person "+mee+" disconnected.");
 	});
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //This code is meant to generate the world!
 

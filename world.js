@@ -31,7 +31,7 @@ var me = 0;
 var connected = false;
 var requiredLoad = 3;
 var connection;
-var canDraw = true;
+var canRec = true;
 
 //Pararmeters:
 var numTimes = 10; //Higher means more accurate physics but slower speed;
@@ -154,7 +154,7 @@ $(document).ready(function(){
 		evnt.preventDefault();
 	});
 	
-	//SERVER COMMANDS:
+	//SERVER COMMANDS: ------------------------------------------------------------
 	function makeConnection(ip){
 		try{
 			if(!connected){
@@ -183,8 +183,9 @@ $(document).ready(function(){
 						thingsLoaded+=1;
 						break;
 					case 3:
-						if(thingsLoaded===requiredLoad && canDraw){
+						if(thingsLoaded===requiredLoad && canRec){
 							otherPeopleList = msg.data;
+							canRec = false;
 						}
 						break;
 				}
@@ -195,10 +196,11 @@ $(document).ready(function(){
 			}
 			
 			connection.onclose = function(evnt){
-				console.log("Bye!");
+				console.log("You have disconnected.");
 			}
 		}
 	}
+	//END SERVER STUFF--------------------------------------------------------------------------------
 	
 	//THE REST OF THE FXN:
 	function simulate(elapsedTime){
@@ -335,14 +337,10 @@ $(document).ready(function(){
 		canX.fill();
 		
 		//OTHER PEOPLE:
-		if(canDraw){
-			canDraw = false;
-			for(var i = 0;i < otherPeopleList.length;i++){
-				if(i!=me && otherPeopleList[i].left!=1){
-					drawThing(otherPeopleList[i].pList);
-				}
+		for(var i = 0;i < otherPeopleList.length;i++){
+			if(i!=me && otherPeopleList[i].left!=1){
+				drawThing(otherPeopleList[i].pList);
 			}
-			canDraw = true;
 		}
 		
 		//WATER:
@@ -410,6 +408,7 @@ $(document).ready(function(){
 			}
 			
 			redraw();
+			canRec = true;
 		}
 	}
 	
