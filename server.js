@@ -14,7 +14,7 @@ wss.on('connection',function(ws){
 	//Find a place for them:
 	var mee = 0;
 	if(personList.length===0){
-		personList.push({pList: [],who: 0,left:0});
+		personList.push({pList: [],who: 0,colr: "rgb(0,0,0)", left:0});
 		mee = 0;	
 		pLen = 1;
 	}
@@ -28,7 +28,7 @@ wss.on('connection',function(ws){
 				}
 			}
 			else{
-				personList.push({pList: [],who: i,left:0});
+				personList.push({pList: [],who: i,colr: "rgb(0,0,0)", left:0});
 				pLen += 1;
 				mee = i;
 				i = pLen+1;
@@ -61,8 +61,10 @@ wss.on('connection',function(ws){
 			var msg = JSON.parse(message);
 			switch(msg.flag){
 			case 0://positions
-				personList[msg.who] = {pList: msg.message,who: msg.who,left: 0};
+				personList[msg.who].pList = msg.message;
 				break;
+			case 1://color
+				personList[msg.who].colr = msg.message;
 			}
 		} catch(err){
 			console.log(err);
@@ -74,6 +76,7 @@ wss.on('connection',function(ws){
 		clearInterval(broadcast);
 		personList[mee].left = 1;
 		personList[mee].pList = [];
+		personList[mee].colr = "";
 		console.log("Person "+mee+" disconnected.");
 	});
 });

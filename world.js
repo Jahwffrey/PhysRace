@@ -44,6 +44,7 @@ var eldrichMonstrosities = false; //really stupid if you set to true
 var gColorO = [255,255,255]; //Color of the ground
 var sColorO = [255,255,255]; //Color of the surface
 var syColorO = [255,255,255];//Color of the sky
+var myColor = "rgb("+Math.round(Math.random()*255)+","+Math.round(Math.random()*255)+","+Math.round(Math.random()*255)+")";
 
 
 //Shape perameters:
@@ -180,6 +181,7 @@ $(document).ready(function(){
 						waterLevel = msg.data.wL;
 						yMax = msg.data.yM;
 						me = msg.data.whom;
+						connection.send(JSON.stringify({message: myColor,who: me,flag: 1}))//Tell the server my color
 						thingsLoaded+=1;
 						break;
 					case 3:
@@ -324,12 +326,12 @@ $(document).ready(function(){
 		for(var i = 0;i < otherPeopleList.length;i++){
 			if(i!=me && otherPeopleList[i].left!=1){
 				if(otherPeopleList[i].pList.length>0){
-					drawThing(otherPeopleList[i].pList);
+					drawThing(otherPeopleList[i].pList,otherPeopleList[i].colr);
 				}
 			}
 		}
 		
-		//The shape:
+		//Me:
 		canX.beginPath();
 		canX.strokeStyle="rgb(0,0,0)";
 		canX.moveTo(partList[0].pos.x-view.x,partList[0].pos.y-view.y);
@@ -343,7 +345,7 @@ $(document).ready(function(){
 		canX.closePath();
 		canX.lineWidth = 1;
 		canX.stroke();
-		canX.fillStyle="rgb(255,0,0)";
+		canX.fillStyle=myColor;
 		canX.fill();
 		
 		//WATER:
@@ -377,7 +379,7 @@ $(document).ready(function(){
 		
 	}
 	
-	function drawThing(whatThing){
+	function drawThing(whatThing,coll){
 		canX.beginPath();
 		canX.strokeStyle="rgb(0,0,0)";
 		canX.moveTo(whatThing[0].pos.x-view.x,whatThing[0].pos.y-view.y);
@@ -391,7 +393,7 @@ $(document).ready(function(){
 		canX.closePath();
 		canX.lineWidth = 1;
 		canX.stroke();
-		canX.fillStyle="rgb(255,0,0)";
+		canX.fillStyle=coll;
 		canX.fill();
 	}
 	
