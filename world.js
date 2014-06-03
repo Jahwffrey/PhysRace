@@ -184,6 +184,7 @@ $(document).ready(function(){
 						break;
 					case 3:
 						if(thingsLoaded===requiredLoad && canRec){
+							otherPeopleList = [];
 							otherPeopleList = msg.data;
 							canRec = false;
 						}
