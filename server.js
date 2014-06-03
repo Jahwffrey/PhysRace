@@ -64,7 +64,6 @@ wss.on('connection',function(ws){
 				personList[msg.who] = {pList: msg.message,who: msg.who,left: 0};
 				break;
 			}
-		}
 		} catch(err){
 			console.log(err);
 		}
@@ -78,7 +77,6 @@ wss.on('connection',function(ws){
 		console.log("Person "+mee+" disconnected.");
 	});
 });
-
 
 
 

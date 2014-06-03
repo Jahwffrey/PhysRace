@@ -31,7 +31,7 @@ var me = 0;
 var connected = false;
 var requiredLoad = 3;
 var connection;
-var canRec = true;
+var canRec = false;
 
 //Pararmeters:
 var numTimes = 10; //Higher means more accurate physics but slower speed;
@@ -184,7 +184,7 @@ $(document).ready(function(){
 						break;
 					case 3:
 						if(thingsLoaded===requiredLoad && canRec){
-							otherPeopleList = [];
+							otherPeopleList.length = 0;
 							otherPeopleList = msg.data;
 							canRec = false;
 						}
@@ -320,6 +320,15 @@ $(document).ready(function(){
 		canX.fill();
 		canX.stroke();
 		
+		//OTHER PEOPLE:
+		for(var i = 0;i < otherPeopleList.length;i++){
+			if(i!=me && otherPeopleList[i].left!=1){
+				if(otherPeopleList[i].pList.length>0){
+					drawThing(otherPeopleList[i].pList);
+				}
+			}
+		}
+		
 		//The shape:
 		canX.beginPath();
 		canX.strokeStyle="rgb(0,0,0)";
@@ -336,13 +345,6 @@ $(document).ready(function(){
 		canX.stroke();
 		canX.fillStyle="rgb(255,0,0)";
 		canX.fill();
-		
-		//OTHER PEOPLE:
-		for(var i = 0;i < otherPeopleList.length;i++){
-			if(i!=me && otherPeopleList[i].left!=1){
-				drawThing(otherPeopleList[i].pList);
-			}
-		}
 		
 		//WATER:
 		canX.beginPath();
