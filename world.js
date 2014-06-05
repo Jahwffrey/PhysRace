@@ -238,8 +238,8 @@ $(document).ready(function(){
 				}
 			}
 			partList[i].vel = partList[i].pos.subtract(partList[i].prevPos);
-			var nextPosX = partList[i].pos.x + partList[i].vel.x + partList[i].acc.x * elapsedSq;
-			var nextPosY = partList[i].pos.y + partList[i].vel.y + partList[i].acc.y * elapsedSq;
+			var nextPosX = partList[i].pos.x + partList[i].vel.x + partList[i].acc.x*elapsedSq;
+			var nextPosY = partList[i].pos.y + partList[i].vel.y + partList[i].acc.y*elapsedSq;
 			partList[i].prevPos.x = partList[i].pos.x;
 			partList[i].prevPos.y = partList[i].pos.y;
 			partList[i].pos = new vector2(nextPosX,nextPosY);
