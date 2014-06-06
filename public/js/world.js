@@ -9,6 +9,7 @@ var otherPeopleList = [];
 var keys = [];
 var num = 0;
 var bindNum = 0;
+var TAU = 2*3.141592638;
 var date  = new Date();
 var lastTime = date.getTime();
 var currentTime = date.getTime();
@@ -26,15 +27,15 @@ var gColor = "rgb(255,255,255)";
 var sColor = "rgb(255,255,255)";
 var syColor = "rgb(255,255,255)";
 var thingsLoaded  = 0;
-var m = 0;
-
-//shape parameters:
-var numPoints = 30;
-var perimeter = 200;
-var numSides = 4;
+var me = 0;
+var connected = false;
+var requiredLoad = 1;
+var connection;
+var canRec = false;
 
 //Pararmeters:
 var numTimes = 5; //Higher means more accurate physics but slower speed;
+var jelloConst = .00016//.0002; //Stiffness, from 0 to .5
 var fricConst = 1; //how much friction the ground has, 0 to 1
 var grav = .016*perTime; //acceleration due to gravity
 var speed = .01*perTime; // how fast the blob accelerates
@@ -44,6 +45,71 @@ var gColorO = [255,255,255]; //Color of the ground
 var sColorO = [255,255,255]; //Color of the surface
 var syColorO = [255,255,255];//Color of the sky
 var myColor = "rgb("+Math.round(Math.random()*255)+","+Math.round(Math.random()*255)+","+Math.round(Math.random()*255)+")";
+
+
+//Shape perameters:
+var numPoints = 30;
+var perimeter = 200;
+var numSides = 4//3+Math.round(Math.random()*10);
+
+
+var xStart = 100;
+var xFirst = xStart;
+var yStart = 100;
+var yFirst = yStart;
+var sideLen = perimeter/numSides;
+var numPerSide = Math.round(numPoints/numSides);
+numPoints = numPerSide*numSides;
+
+//COMMENCE THE SHAPE CREATION---------------------------------------------------
+
+var theta = 0;
+for(var i = 0;i < numSides;i++){
+	theta = i*((TAU)/numSides);
+	for(var ii = 0;ii<numPerSide;ii++){
+		makePart(xStart,yStart,1,0,0);
+		xStart = xStart+(sideLen/numPerSide)*Math.cos(theta);
+		yStart = yStart+(sideLen/numPerSide)*Math.sin(theta);
+	}
+}
+
+if(!eldrichMonstrosities){
+	for(var i = 0;i < partList.length;i++){ //Make the outer shell
+		var next = i + 1;
+		if(next>=partList.length) next = 0;
+		makeBind(i,next,-1,.05); //outer membrane stiffness
+	}
+}
+else{speed = speed*6};
+
+for(var ii  = Math.round(numPoints/4); ii < 2*numPoints/4;ii++){
+	for(var i = 0;i < partList.length;i++){
+		var next = i + ii;
+		if(next>=partList.length) next = next - numPoints;
+		makeBind(i,next,-1,jelloConst);
+	}
+}
+
+var midX = xFirst+sideLen/2;
+var midY = (partList[0].pos.y+partList[Math.round((partList.length-1)/2)].pos.y)/2;
+
+makePart(midX,midY,1,0,0);
+for(var i = 0;i < partList.length-1;i++){
+	makeBind(i,partList.length-1,-1,jelloConst);
+}
+
+function makePart(x,y,mass,hspeed,vspeed){
+	num+=1;
+	partList[num-1] = new pointMass(x,y,mass,hspeed,vspeed,num);
+}
+
+function makeBind(num1,num2,dist,stiff){
+	if(dist<0){
+		dist = Math.sqrt(Math.pow(partList[num1].pos.x-partList[num2].pos.x,2)+Math.pow(partList[num1].pos.y-partList[num2].pos.y,2));
+	}
+	bindList[bindNum] = new constraint(partList[num1],partList[num2],dist,stiff);
+	bindNum+=1;
+}
 
 function changeColors(type){
 	switch(type){
@@ -85,15 +151,19 @@ $(document).ready(function(){
 	var canX = can.getContext("2d");
 	
 	var socket = io();
-	socket.emit('setup',{nmPts: numPoints,prmtr: perimeter,nmSds: numSides});
-	socket.on('you',function(msg){
-		partList = msg.you.pList;
-		bindList = msg.you.bindList;
-		wallList = msg.world;
-		changeList = changes;
-		thingsLoaded = 3;
+	socket.on('setup',function(msg){
+		wallList = msg.wL;
+		changeList = msg.cL;
+		waterLevel = msg.wLe;
+		yMax = msg.yM;
+		me = msg.whom;
+		socket.emit('setCol',{col: myColor,who: me});
+		
+		thingsLoaded = 1;
 	});
-	
+	socket.on('ppl',function(msg){
+		otherPeopleList = msg;
+	});
 	
 	//THE REST OF THE FXN:
 	function simulate(elapsedTime){
@@ -165,7 +235,7 @@ $(document).ready(function(){
 				}
 			}
 		}
-		connection.send(JSON.stringify({message: partList,who: me,flag: 0}));//Flag 0 = partList
+		socket.emit('myPos',{pos: partList,who: me});//Flag 0 = partList
 	}
 	
 	function redraw(){
@@ -294,7 +364,7 @@ $(document).ready(function(){
 			var change = currentTime - lastTime;
 			lastTime = currentTime;
 			var steps = Math.floor((change + timeLeftOver)/fixedDelta);
-			steps = Math.min(steps,20);
+			steps = Math.min(steps,5);
 			if(steps<1) steps = 1;
 			timeLeftOver = change - (steps * fixedDelta);
 			
