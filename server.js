@@ -139,13 +139,16 @@ function generateWorld(){
 				break;
 			case 2:
 				//Valley
+				var turnpoint = Math.round(Math.random()*gLen);
+				var sign = Math.random(2);
+				(sign<1) ? sign=-1 : sign=1;
 				for(var i = 0;i < gLen;i++){
 					xNext = xBegin+40+Math.random()*50;
-					if(i<gLen/2){
-						yNext = yBegin+10+Math.random()*40;
+					if(i<turnpoint){
+						yNext = yBegin+sign*(10+Math.random()*40);
 					}
 					else{
-						yNext = yBegin-10-Math.random()*40;
+						yNext = yBegin+(-sign)*(10+Math.random()*40);
 					}
 					if(yNext>yMax) yMax = yNext;
 					makeWall(xBegin,yBegin,xNext,yNext,2);
