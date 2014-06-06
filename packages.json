@@ -1,0 +1,9 @@
+{
+	"name": "PhysRace",
+	"version": "0.2.5",
+	"description": "Online racing of jelly shapes",
+	"dependencies": {
+		"express": "4.4.1",
+		"socket.io": "1.0.4"
+	}
+}

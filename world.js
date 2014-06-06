@@ -34,12 +34,12 @@ var connection;
 var canRec = false;
 
 //Pararmeters:
-var numTimes = 10; //Higher means more accurate physics but slower speed;
-var jelloConst = .00008//.0002; //Stiffness, from 0 to .5
+var numTimes = 5; //Higher means more accurate physics but slower speed;
+var jelloConst = .00016//.0002; //Stiffness, from 0 to .5
 var fricConst = 1; //how much friction the ground has, 0 to 1
 var grav = .016*perTime; //acceleration due to gravity
 var speed = .01*perTime; // how fast the blob accelerates
-var devmode = false; //show behind the scenes things or not
+var devmode = true; //show behind the scenes things or not
 var eldrichMonstrosities = false; //really stupid if you set to true
 var gColorO = [255,255,255]; //Color of the ground
 var sColorO = [255,255,255]; //Color of the surface
@@ -151,7 +151,7 @@ $(document).ready(function(){
 	var canX = can.getContext("2d");
 	
 	$('#form').submit(function(evnt){
-		makeConnection($('#ip').val());
+		makeConnection( $('#ip').val());
 		evnt.preventDefault();
 	});
 	
