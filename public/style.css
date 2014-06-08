@@ -6,6 +6,10 @@ body
 {
 	border:1px solid black;
 }
+#preview
+{
+	border:1px solid black;
+}
 #canvDiv
 {
 	margin-left:auto;
@@ -15,4 +19,12 @@ body
 	max-width:818px;
 	text-align:center;
 	background-color:white;	
+}
+#setup
+{
+	text-align:center;
+	margin-left:25%;
+	margin-right:auto;
+	padding-left:auto;
+	padding-right:auto;
 }

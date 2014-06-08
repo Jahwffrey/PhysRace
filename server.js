@@ -27,7 +27,7 @@ io.on('connection',function(socket){
 	//Find a place for them:
 	var mee = 0;
 	if(personList.length===0){
-		personList.push({pList: [],who: 0,colr: "rgb(0,0,0)", left:0});
+		personList.push({pList: [],who: 0,colr: "rgb(0,0,0)", left:2});
 		mee = 0;	
 		pLen = 1;
 	}
@@ -35,13 +35,13 @@ io.on('connection',function(socket){
 		for(var i = 0;i <= pLen;i++){
 			if(!(i===pLen)){
 				if(personList[i].left === 1){
-					personList[i].left = 0;
+					personList[i].left = 2;
 					mee = i;
 					i = pLen + 1;
 				}
 			}
 			else{
-				personList.push({pList: [],who: i,colr: "rgb(0,0,0)", left:0});
+				personList.push({pList: [],who: i,colr: "rgb(0,0,0)", left:2});
 				pLen += 1;
 				mee = i;
 				i = pLen+1;
@@ -49,10 +49,15 @@ io.on('connection',function(socket){
 		}
 	}
 	console.log("Person "+mee+" connected.");
-	socket.emit('setup',{wL: wallList,cL: changeList, wLe: waterLevel,yM: yMax,whom: mee});
-	var broadcast = setInterval(function(){
-		socket.emit('ppl',personList);
-	},200);
+	
+	socket.on('ready',function(msg){
+		personList[msg.who].left = 0;
+		personList[msg.who].colr = msg.col;
+		socket.emit('setup',{wL: wallList,cL: changeList, wLe: waterLevel,yM: yMax,whom: mee});
+		var broadcast = setInterval(function(){
+			socket.emit('ppl',personList);
+		},200);
+	});
 	
 	socket.on('setCol',function(msg){
 		personList[msg.who].colr = msg.col;

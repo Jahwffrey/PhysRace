@@ -63,39 +63,41 @@ numPoints = numPerSide*numSides;
 
 //COMMENCE THE SHAPE CREATION---------------------------------------------------
 
-var theta = 0;
-for(var i = 0;i < numSides;i++){
-	theta = i*((TAU)/numSides);
-	for(var ii = 0;ii<numPerSide;ii++){
-		makePart(xStart,yStart,1,0,0);
-		xStart = xStart+(sideLen/numPerSide)*Math.cos(theta);
-		yStart = yStart+(sideLen/numPerSide)*Math.sin(theta);
+function makeShape(){
+	var theta = 0;
+	for(var i = 0;i < numSides;i++){
+		theta = i*((TAU)/numSides);
+		for(var ii = 0;ii<numPerSide;ii++){
+			makePart(xStart,yStart,1,0,0);
+			xStart = xStart+(sideLen/numPerSide)*Math.cos(theta);
+			yStart = yStart+(sideLen/numPerSide)*Math.sin(theta);
+		}
 	}
-}
 
-if(!eldrichMonstrosities){
-	for(var i = 0;i < partList.length;i++){ //Make the outer shell
-		var next = i + 1;
-		if(next>=partList.length) next = 0;
-		makeBind(i,next,-1,.05); //outer membrane stiffness
+	if(!eldrichMonstrosities){
+		for(var i = 0;i < partList.length;i++){ //Make the outer shell
+			var next = i + 1;
+			if(next>=partList.length) next = 0;
+			makeBind(i,next,-1,.05); //outer membrane stiffness
+		}
 	}
-}
-else{speed = speed*6};
+	else{speed = speed*6};
 
-for(var ii  = Math.round(numPoints/4); ii < 2*numPoints/4;ii++){
-	for(var i = 0;i < partList.length;i++){
-		var next = i + ii;
-		if(next>=partList.length) next = next - numPoints;
-		makeBind(i,next,-1,jelloConst);
+	for(var ii  = Math.round(numPoints/4); ii < 2*numPoints/4;ii++){
+		for(var i = 0;i < partList.length;i++){
+			var next = i + ii;
+			if(next>=partList.length) next = next - numPoints;
+			makeBind(i,next,-1,jelloConst);
+		}
 	}
-}
 
-var midX = xFirst+sideLen/2;
-var midY = (partList[0].pos.y+partList[Math.round((partList.length-1)/2)].pos.y)/2;
+	var midX = xFirst+sideLen/2;
+	var midY = (partList[0].pos.y+partList[Math.round((partList.length-1)/2)].pos.y)/2;
 
-makePart(midX,midY,1,0,0);
-for(var i = 0;i < partList.length-1;i++){
-	makeBind(i,partList.length-1,-1,jelloConst);
+	makePart(midX,midY,1,0,0);
+	for(var i = 0;i < partList.length-1;i++){
+		makeBind(i,partList.length-1,-1,jelloConst);
+	}
 }
 
 function makePart(x,y,mass,hspeed,vspeed){
@@ -150,6 +152,15 @@ $(document).ready(function(){
 	var can = document.getElementById("canv");
 	var canX = can.getContext("2d");
 	
+	//WEBPAGE FXNS:
+	$('#form').submit(function(evnt){
+		evnt.preventDefault();
+	});
+			
+	$("#r1").change(function(){
+		$("#s2").value = $("#s1").val();
+	});
+	
 	var socket = io();
 	socket.on('setup',function(msg){
 		wallList = msg.wL;
@@ -165,7 +176,7 @@ $(document).ready(function(){
 		otherPeopleList = msg;
 	});
 	var update = setInterval(function(){
-		socket.emit('myPos',{pos: partList,who: me});
+		//socket.emit('myPos',{pos: partList,who: me});
 	},100);
 	
 	//THE REST OF THE FXN:
@@ -377,9 +388,14 @@ $(document).ready(function(){
 			redraw();
 			canRec = true;
 		}
+		else{
+			//drawMenu();
+		}
 	}
 	
 	var repeat = setInterval(function(){go()},1);
+	
+	//menu stuff:
 	
 	$("#canv")
 		.mousemove(function(evnt){
