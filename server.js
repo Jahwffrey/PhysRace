@@ -52,7 +52,7 @@ io.on('connection',function(socket){
 	socket.emit('setup',{wL: wallList,cL: changeList, wLe: waterLevel,yM: yMax,whom: mee});
 	var broadcast = setInterval(function(){
 		socket.emit('ppl',personList);
-	},10);
+	},200);
 	
 	socket.on('setCol',function(msg){
 		personList[msg.who].colr = msg.col;

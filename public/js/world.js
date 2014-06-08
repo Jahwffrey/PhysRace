@@ -164,6 +164,9 @@ $(document).ready(function(){
 	socket.on('ppl',function(msg){
 		otherPeopleList = msg;
 	});
+	var update = setInterval(function(){
+		socket.emit('myPos',{pos: partList,who: me});
+	},100);
 	
 	//THE REST OF THE FXN:
 	function simulate(elapsedTime){
@@ -235,7 +238,6 @@ $(document).ready(function(){
 				}
 			}
 		}
-		socket.emit('myPos',{pos: partList,who: me});//Flag 0 = partList
 	}
 	
 	function redraw(){
