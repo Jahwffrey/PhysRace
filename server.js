@@ -7,7 +7,7 @@ var TAU = 2*Math.PI;
 var wallList = [];
 var changeList = [];
 var waterLevel = 200000;
-var yMax = 2000;
+var yMax = 20000;
 var jelloConst = .00016//.0002; //Stiffness, from 0 to .5
 var requiredLoad = 0;
 var eldrichMonstrosities = false;
@@ -113,21 +113,23 @@ function generateWorld(){
 	var yBegin = 250;
 	var xNext = 0;
 	var yNext = 0;
-	var fullLen = 800;
+	var fullLen = 400;
 	var gLen = 0;
 	var worldType = 4; //0 = Plains
+	makeWall(-100,-1000,xBegin,yBegin);
 	do{
 		worldType = Math.round(Math.random()*4);
 		var a = {"x":xBegin,"type":worldType}
 		changeList.push(a);
-		gLen = Math.min(50+Math.round(Math.random()*100),fullLen);
+		gLen = Math.min(50+Math.round(Math.random()*20),fullLen);
 		fullLen = fullLen - gLen;
 		switch(worldType){
 			case 0:
 				//Flatlands
 				for(var i = 0;i < gLen;i++){
 					xNext = xBegin+50+Math.random()*150;
-					yNext = yBegin-20+Math.random()*40;
+					yNext = yBegin-10-Math.random()*10;
+					if(i%4===0) yNext= yNext + 60;
 					makeWall(xBegin,yBegin,xNext,yNext,0);
 					xBegin = xNext;
 					yBegin = yNext;
@@ -135,6 +137,7 @@ function generateWorld(){
 				break;
 			case 1:
 				//Cliff
+				gLen = gLen*2;
 				for(var i = 0;i < gLen;i++){
 					xNext = xBegin+10+Math.random()*10;
 					yNext = yBegin+2+Math.random()*100;

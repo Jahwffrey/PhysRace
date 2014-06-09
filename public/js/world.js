@@ -151,7 +151,8 @@ function changeColors(type){
 }
 
 $(document).ready(function(){
-	//var canConnect = false;
+
+	var rota = 0;
 	var can = document.getElementById("canv");
 	var canX = can.getContext("2d");
 	$("#setup").hide();
@@ -426,17 +427,41 @@ $(document).ready(function(){
 	}
 	
 	function drawMenu(){
-		canX.fillStyle = "rgb(0,0,0)"
+		canX.fillStyle = "rgb(125,170,211)"
 		canX.fillRect(0,0,800,300);
+		
+		//SHAPE
+		rota = rota + 0.001;
+		var theta = rota;
+		var xBegi = 400;
+		var yBegi = 150+(200/$("#sides").val())*Math.sin(theta);
+		canX.fillStyle = "rgb("+$("#red").val()+","+$("#green").val()+","+$("#blue").val()+")";
+		canX.beginPath();
+		canX.moveTo(xBegi,yBegi);
+		for(var i = 0;i < $("#sides").val();i++){
+			theta = theta+(TAU/$("#sides").val());
+			xNex = xBegi+(600/$("#sides").val())*Math.cos(theta);
+			yNex = yBegi+(600/$("#sides").val())*Math.sin(theta);
+			canX.lineTo(xNex,yNex);
+			xBegi = xNex;
+			yBegi = yNex;
+		}
+		canX.fill();
+		canX.stroke();
+		
+		canX.fillStyle = "rgba(0,0,0,.5)";
+		canX.fillRect(5,5,120,90);
 		canX.font = "20px Lucida Console"
 		canX.fillStyle = "rgb(255,0,0)";
-		canX.fillText("Red: "+$("#red").val(),0,20);
+		canX.fillText("Red: "+$("#red").val(),8,25);
 		canX.fillStyle = "rgb(0,255,0)";
-		canX.fillText("Grn: "+$("#green").val(),0,40);
+		canX.fillText("Grn: "+$("#green").val(),8,45);
 		canX.fillStyle = "rgb(0,0,255)";
-		canX.fillText("Blu: "+$("#blue").val(),0,60);
+		canX.fillText("Blu: "+$("#blue").val(),8,65);
 		canX.fillStyle = "rgb(255,255,255)";
-		canX.fillText("Sides: "+$("#sides").val(),0,80);
+		canX.fillText("Sides: "+$("#sides").val(),8,85);
+		canX.beginPath();
+		
 	}
 	
 	var repeat = setInterval(function(){go()},1);
