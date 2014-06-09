@@ -14,9 +14,7 @@ var date  = new Date();
 var lastTime = date.getTime();
 var currentTime = date.getTime();
 var timeLeftOver = 0;
-var fixedDelta = 16;
-var perTime = 1000;
-var fixedTimeChange = fixedDelta/perTime;
+
 var yMax = 0;
 var waterLevel = 0; 
 var cChange = true;
@@ -39,8 +37,6 @@ var update;
 var numTimes = 5; //Higher means more accurate physics but slower speed;
 var jelloConst = .00016//.0002; //Stiffness, from 0 to .5
 var fricConst = 1; //how much friction the ground has, 0 to 1
-var grav = .016*perTime; //acceleration due to gravity
-var speed = .01*perTime; // how fast the blob accelerates
 var devmode = false; //show behind the scenes things or not
 var eldrichMonstrosities = false; //really stupid if you set to true
 var gColorO = [255,255,255]; //Color of the ground
@@ -151,10 +147,20 @@ function changeColors(type){
 }
 
 $(document).ready(function(){
-
+	var fixedDelta = 16;
+	var perTime = 1000;
+	var fixedTimeChange = fixedDelta/perTime;
+	var grav = 16; //acceleration due to gravity
+	var speed = 10; // how fast the blob accelerates
+	var wait = true;
+	var finishedRace = false;
+	var winX = 0;
+	var waitX = 200;
+	
 	var rota = 0;
 	var can = document.getElementById("canv");
 	var canX = can.getContext("2d");
+	var beginTime;
 	$("#setup").hide();
 	
 	canX.fillStyle="rgb(0,0,0)";
@@ -169,6 +175,7 @@ $(document).ready(function(){
 		changeList = msg.cL;
 		waterLevel = msg.wLe;
 		yMax = msg.yM;
+		winX = wallList[wallList.length-1].x2-200;
 		
 		thingsLoaded = 1;
 	});
@@ -178,6 +185,12 @@ $(document).ready(function(){
 	socket.on('you',function(msg){
 		me=msg.who;
 		canConnect = true;
+	});
+	socket.on('begin',function(msg){
+		if(wait===true){
+			wait = false;
+			beginTime = new Date();
+		}
 	});
 	socket.on('disconnect',function(){
 		clearInterval(update);
@@ -249,6 +262,14 @@ $(document).ready(function(){
 			var nextPosY = partList[i].pos.y + partList[i].vel.y + partList[i].acc.y*elapsedSq;
 			partList[i].prevPos.x = partList[i].pos.x;
 			partList[i].prevPos.y = partList[i].pos.y;
+			if(wait===true && nextPosX>waitX) nextPosX = waitX; //keep from going before race starts.
+			if(finishedRace===false){ //check for if youve won
+				if(nextPosX>winX){
+					finishedRace = true;
+					var endTime = new Date;
+					socket.emit('Finished',{time: endTime-beginTime,who: me});
+				}
+			}
 			partList[i].pos = new vector2(nextPosX,nextPosY);
 			partList[i].acc.set(0,0);
 		}
@@ -353,6 +374,23 @@ $(document).ready(function(){
 		canX.stroke();
 		canX.fillStyle=myColor;
 		canX.fill();
+		
+		//important lines
+		if(wait===true){
+			canX.beginPath(); //Wait line
+			canX.moveTo(waitX-view.x,0);
+			canX.lineTo(waitX-view.x,300);
+			canX.lineWidth = 10;
+			canX.strokeStyle = "rgb(20,20,20)";
+			canX.stroke();
+		}
+		
+		canX.beginPath(); //Win line
+		canX.moveTo(winX-view.x,0);
+		canX.lineTo(winX-view.x,300);
+		canX.lineWidth = 10;
+		canX.strokeStyle = "rgb(255,215,20)";
+		canX.stroke();
 		
 		//WATER:
 		canX.beginPath();

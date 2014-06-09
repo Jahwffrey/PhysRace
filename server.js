@@ -2,19 +2,24 @@ var express = require('express')
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-
 var TAU = 2*Math.PI;
 var wallList = [];
 var changeList = [];
 var waterLevel = 200000;
 var yMax = 20000;
-var jelloConst = .00016//.0002; //Stiffness, from 0 to .5
-var requiredLoad = 0;
-var eldrichMonstrosities = false;
+var startTime = new Date();
 
 var personList = [];
 var pLen = 0;
 personList.length = 0;
+
+var keepTrack = setInterval(function(){
+	var currTime = new Date();
+	if(currTime - startTime > 10000){
+		console.log("Begin the race!");
+		io.sockets.emit('begin',"");
+	}
+},10000);
 
 app.use(express.static(__dirname + "\\public"));
 
@@ -71,6 +76,10 @@ io.on('connection',function(socket){
 		}
 	});
 	
+	socket.on('Finished',function(msg){
+		console.log(personList[msg.who].name +" finished after "+msg.time+" milliseconds!");
+	});
+	
 	socket.on('disconnect',function(){
 		try{
 			clearInterval(broadcast);
@@ -113,7 +122,7 @@ function generateWorld(){
 	var yBegin = 250;
 	var xNext = 0;
 	var yNext = 0;
-	var fullLen = 400;
+	var fullLen = 40;
 	var gLen = 0;
 	var worldType = 4; //0 = Plains
 	makeWall(-100,-1000,xBegin,yBegin);
