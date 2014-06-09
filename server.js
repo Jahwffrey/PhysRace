@@ -25,9 +25,10 @@ app.get('/',function(req,res){
 io.on('connection',function(socket){
 	console.log("Attempted Connection");
 	//Find a place for them:
+	
 	var mee = 0;
 	if(personList.length===0){
-		personList.push({pList: [],who: 0,colr: "rgb(0,0,0)", left:2});
+		personList.push({pList: [],who: 0,colr: "rgb(0,0,0)", left: 2,name: ""});
 		mee = 0;	
 		pLen = 1;
 	}
@@ -41,7 +42,7 @@ io.on('connection',function(socket){
 				}
 			}
 			else{
-				personList.push({pList: [],who: i,colr: "rgb(0,0,0)", left:2});
+				personList.push({pList: [],who: i,colr: "rgb(0,0,0)", left: 2,name: ""});
 				pLen += 1;
 				mee = i;
 				i = pLen+1;
@@ -49,33 +50,35 @@ io.on('connection',function(socket){
 		}
 	}
 	console.log("Person "+mee+" connected.");
+	socket.emit('you',{who: mee});
 	
 	socket.on('ready',function(msg){
-		personList[msg.who].left = 0;
 		personList[msg.who].colr = msg.col;
-		socket.emit('setup',{wL: wallList,cL: changeList, wLe: waterLevel,yM: yMax,whom: mee});
+		personList[msg.who].name = msg.whatName;
+		personList[msg.who].left = 0;
 		var broadcast = setInterval(function(){
 			socket.emit('ppl',personList);
 		},200);
-	});
-	
-	socket.on('setCol',function(msg){
-		personList[msg.who].colr = msg.col;
+		socket.emit('setup',{wL: wallList,cL: changeList, wLe: waterLevel,yM: yMax});
 	});
 	
 	socket.on('myPos',function(msg){
 		try{
 			personList[msg.who].pList = msg.pos;
 		} catch(err){
+			console.log(msg.who);
 			console.log(err);
 		}
 	});
 	
 	socket.on('disconnect',function(){
-		clearInterval(broadcast);
+		try{
+			clearInterval(broadcast);
+		}catch(err){};
 		personList[mee].left = 1;
 		personList[mee].pList = [];
 		personList[mee].colr = "";
+		personList[mee].name = "";
 		console.log("Person "+mee+" disconnected.");
 	});
 });

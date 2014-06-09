@@ -23,8 +23,5 @@ body
 #setup
 {
 	text-align:center;
-	margin-left:25%;
-	margin-right:auto;
-	padding-left:auto;
-	padding-right:auto;
+	margin-left:auto
 }

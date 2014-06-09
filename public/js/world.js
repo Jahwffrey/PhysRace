@@ -32,6 +32,8 @@ var connected = false;
 var requiredLoad = 1;
 var connection;
 var canRec = false;
+var myName = "";
+var update;
 
 //Pararmeters:
 var numTimes = 5; //Higher means more accurate physics but slower speed;
@@ -44,26 +46,26 @@ var eldrichMonstrosities = false; //really stupid if you set to true
 var gColorO = [255,255,255]; //Color of the ground
 var sColorO = [255,255,255]; //Color of the surface
 var syColorO = [255,255,255];//Color of the sky
-var myColor = "rgb("+Math.round(Math.random()*255)+","+Math.round(Math.random()*255)+","+Math.round(Math.random()*255)+")";
+var r = Math.round(Math.random()*255);
+var g = Math.round(Math.random()*255);
+var b = Math.round(Math.random()*255);
+var myColor = "rgb("+r+","+g+","+b+")";
 
 
 //Shape perameters:
 var numPoints = 30;
 var perimeter = 200;
-var numSides = 4//3+Math.round(Math.random()*10);
-
-
-var xStart = 100;
-var xFirst = xStart;
-var yStart = 100;
-var yFirst = yStart;
-var sideLen = perimeter/numSides;
-var numPerSide = Math.round(numPoints/numSides);
-numPoints = numPerSide*numSides;
+var numSides = 3+Math.round(Math.random()*10);
 
 //COMMENCE THE SHAPE CREATION---------------------------------------------------
-
 function makeShape(){
+	var xStart = 100;
+	var xFirst = xStart;
+	var yStart = 100;
+	var yFirst = yStart;
+	var sideLen = perimeter/numSides;
+	var numPerSide = Math.round(numPoints/numSides);
+	numPoints = numPerSide*numSides;
 	var theta = 0;
 	for(var i = 0;i < numSides;i++){
 		theta = i*((TAU)/numSides);
@@ -149,35 +151,65 @@ function changeColors(type){
 }
 
 $(document).ready(function(){
+	//var canConnect = false;
 	var can = document.getElementById("canv");
 	var canX = can.getContext("2d");
+	$("#setup").hide();
 	
-	//WEBPAGE FXNS:
-	$('#form').submit(function(evnt){
-		evnt.preventDefault();
-	});
-			
-	$("#r1").change(function(){
-		$("#s2").value = $("#s1").val();
-	});
-	
+	canX.fillStyle="rgb(0,0,0)";
+	canX.font="20px Georgia";
+	canX.fillRect(0,0,800,300);
+	canX.fillStyle = "rgb(255,255,255)";
+	canX.font = "60px Arial";
+	canX.fillText("Connecting...",200,150);
 	var socket = io();
 	socket.on('setup',function(msg){
 		wallList = msg.wL;
 		changeList = msg.cL;
 		waterLevel = msg.wLe;
 		yMax = msg.yM;
-		me = msg.whom;
-		socket.emit('setCol',{col: myColor,who: me});
 		
 		thingsLoaded = 1;
 	});
 	socket.on('ppl',function(msg){
 		otherPeopleList = msg;
 	});
-	var update = setInterval(function(){
-		//socket.emit('myPos',{pos: partList,who: me});
-	},100);
+	socket.on('you',function(msg){
+		me=msg.who;
+		canConnect = true;
+	});
+	socket.on('disconnect',function(){
+		clearInterval(update);
+	});
+	$("#setup").show();
+	
+	//WEBPAGE FXNS:
+	$('#form').submit(function(evnt){
+		makeShape();
+		myColor = "rgb("+r+","+g+","+b+")";
+		myName = $("#nam").val();
+		socket.emit('ready',{who: me,col: myColor,whatName: myName});
+		update = setInterval(function(){
+			socket.emit('myPos',{pos: partList,who: me});
+		},100);
+		$("#setup").hide();
+		evnt.preventDefault();
+	});
+			
+	$("#red").change(function(){
+		r = $(this).val();
+	});
+	$("#green").change(function(){
+		g = $(this).val();
+	});
+	$("#blue").change(function(){
+		b = $(this).val();
+	});
+	$("#sides").change(function(){
+		numSides = Math.round($(this).val());
+	});
+	
+	go();
 	
 	//THE REST OF THE FXN:
 	function simulate(elapsedTime){
@@ -389,8 +421,22 @@ $(document).ready(function(){
 			canRec = true;
 		}
 		else{
-			//drawMenu();
+			drawMenu();
 		}
+	}
+	
+	function drawMenu(){
+		canX.fillStyle = "rgb(0,0,0)"
+		canX.fillRect(0,0,800,300);
+		canX.font = "20px Lucida Console"
+		canX.fillStyle = "rgb(255,0,0)";
+		canX.fillText("Red: "+$("#red").val(),0,20);
+		canX.fillStyle = "rgb(0,255,0)";
+		canX.fillText("Grn: "+$("#green").val(),0,40);
+		canX.fillStyle = "rgb(0,0,255)";
+		canX.fillText("Blu: "+$("#blue").val(),0,60);
+		canX.fillStyle = "rgb(255,255,255)";
+		canX.fillText("Sides: "+$("#sides").val(),0,80);
 	}
 	
 	var repeat = setInterval(function(){go()},1);

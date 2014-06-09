@@ -15,25 +15,13 @@
 		<div id = "canvDiv">
 			<canvas id = "canv" width="800" height="300"></canvas>
 			<div id = "setup">
-				<form id = "form">
-					<table id = "tabl">
-						<th>
-							Red:<br>
-							<input type="range" min="0" max="255" value="0" id = "r1" ></input><input type="number" min="0" max="255" value="0" id = "r2" ></input><br>
-							Green:<br>
-							<input type="range" min="0" max="255" value="0" id = "g1" ></input><input type="number" min="0" max="255" value="0" id = "g2" ></input><br>
-							Blue:<br>
-							<input type="range" min="0" max="255" value="0" id = "b1" ></input><input type="number" min="0" max="255" value="0" id = "b2" ></input><br>
-							Number of sides:<br>
-							<input type="range" min="3" max="30" value="4" id = "s1" ></input><input type="number" min="3" max="30" value="4" id = "s2" ></input><br>
-						</th>
-						<th>
-							<canvas id = "preview" width = "200" height = "200"></canvas>
-						</th>
-						<th>
-							<input type = "Submit" id = "rdy" value = "Connect!"></input>
-						</th>
-					</table>
+				<form id="form">
+					<input type="range" min="0" max="255" value="0" id = "red" ></input>
+					<input type="range" min="0" max="255" value="0" id = "green" ></input>
+					<input type="range" min="0" max="255" value="0" id = "blue" ></input>
+					<input type="range" min="3" max="30" value="3" id = "sides" ></input>
+					<input type="text" maxLength="10" placeHolder="Name:" id = "nam"></input>
+					<input type="submit" value="Ready!"></input> 
 				</form>
 			</div>
 		</div>
